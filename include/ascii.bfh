@@ -18,6 +18,13 @@
 
 # define A_EXM C_33
 
+# define A_PERCENT C_37
+
+# define A_STAR   C_42
+# define A_PLUSS  C_43
+# define A_MINUSS C_45
+# define A_SLASH  C_47
+
 # define A_0 C_48
 # define A_1 C_49
 # define A_2 C_50
