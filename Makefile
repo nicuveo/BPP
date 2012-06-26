@@ -13,7 +13,7 @@ clean:
 	rm -fv $(OUT)
 
 $(OUT):
-	cpp -I include $< | egrep -v "^#" > $@
+	cpp -I include $< | egrep -v "^#" | tr -d '[:space:]' > $@
 
 
 
