@@ -1,0 +1,36 @@
+#ifndef STRING_BFH_
+# define STRING_BFH_
+
+
+
+//##########################################
+// includes
+
+# include "ascii.bfh"
+# include "seq.bfh"
+
+
+
+//##########################################
+// exported
+
+// COUT:
+//   prints the given string (char args)
+//   erases the current cell
+# define COUT(...) BOOST_PP_SEQ_FOR_EACH(COUT_, _, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
+
+// ENDL:
+//   prints a line end
+//   erases the current cell
+# define ENDL A_LF .
+
+
+
+//##########################################
+// internal
+
+# define COUT_(R, D, E) BOOST_PP_CAT(A_, E) .
+
+
+
+#endif /* !STRING_BFH_ */

@@ -1,0 +1,70 @@
+#include "bool.bfh"
+#include "math.bfh"
+#include "string.bfh"
+
+COUT(N, O, T, SP, T, R, U, E, COL, SP, SP)                        TRUE  NOT              < A_0 PLUS .ENDL
+COUT(N, O, T, SP, F, A, L, S, E,  COL, SP)                        FALSE NOT              < A_0 PLUS .ENDL.
+
+COUT(T, R, U, E, SP, SP, O, R, SP, T, R, U, E, COL, SP, SP)       TRUE  > TRUE  < OR     < A_0 PLUS .ENDL
+COUT(T, R, U, E, SP, SP, O, R, SP, F, A, L, S, E,  COL, SP)       TRUE  > FALSE < OR     < A_0 PLUS .ENDL
+COUT(F, A, L, S, E,  SP, O, R, SP, T, R, U, E, COL, SP, SP)       FALSE > TRUE  < OR     < A_0 PLUS .ENDL
+COUT(F, A, L, S, E,  SP, O, R, SP, F, A, L, S, E,  COL, SP)       FALSE > FALSE < OR     < A_0 PLUS .ENDL.
+
+COUT(T, R, U, E, SP, SP, A, N, D, SP, T, R, U, E, COL, SP, SP)    TRUE  > TRUE  < AND    < A_0 PLUS .ENDL
+COUT(T, R, U, E, SP, SP, A, N, D, SP, F, A, L, S, E,  COL, SP)    TRUE  > FALSE < AND    < A_0 PLUS .ENDL
+COUT(F, A, L, S, E,  SP, A, N, D, SP, T, R, U, E, COL, SP, SP)    FALSE > TRUE  < AND    < A_0 PLUS .ENDL
+COUT(F, A, L, S, E,  SP, A, N, D, SP, F, A, L, S, E,  COL, SP)    FALSE > FALSE < AND    < A_0 PLUS .ENDL.
+
+COUT(0, SP,  SP, EQS, SP, 0, COL, SP)                             C_0 > C_0 < EQ         < A_0 PLUS .ENDL
+COUT(0, SP,  SP, EQS, SP, 1, COL, SP)                             C_0 > C_1 < EQ         < A_0 PLUS .ENDL
+COUT(1, SP,  SP, EQS, SP, 0, COL, SP)                             C_1 > C_0 < EQ         < A_0 PLUS .ENDL
+COUT(1, SP,  SP, EQS, SP, 1, COL, SP)                             C_1 > C_1 < EQ         < A_0 PLUS .ENDL
+COUT(3, SP,  SP, EQS, SP, 3, COL, SP)                             C_3 > C_3 < EQ         < A_0 PLUS .ENDL
+COUT(3, SP,  SP, EQS, SP, 5, COL, SP)                             C_3 > C_5 < EQ         < A_0 PLUS .ENDL
+COUT(5, SP,  SP, EQS, SP, 3, COL, SP)                             C_5 > C_3 < EQ         < A_0 PLUS .ENDL
+COUT(5, SP,  SP, EQS, SP, 5, COL, SP)                             C_5 > C_5 < EQ         < A_0 PLUS .ENDL.
+
+COUT(0, SP, EXM, EQS, SP, 0, COL, SP)                             C_0 > C_0 < NE         < A_0 PLUS .ENDL
+COUT(0, SP, EXM, EQS, SP, 1, COL, SP)                             C_0 > C_1 < NE         < A_0 PLUS .ENDL
+COUT(1, SP, EXM, EQS, SP, 0, COL, SP)                             C_1 > C_0 < NE         < A_0 PLUS .ENDL
+COUT(1, SP, EXM, EQS, SP, 1, COL, SP)                             C_1 > C_1 < NE         < A_0 PLUS .ENDL
+COUT(3, SP, EXM, EQS, SP, 3, COL, SP)                             C_3 > C_3 < NE         < A_0 PLUS .ENDL
+COUT(3, SP, EXM, EQS, SP, 5, COL, SP)                             C_3 > C_5 < NE         < A_0 PLUS .ENDL
+COUT(5, SP, EXM, EQS, SP, 3, COL, SP)                             C_5 > C_3 < NE         < A_0 PLUS .ENDL
+COUT(5, SP, EXM, EQS, SP, 5, COL, SP)                             C_5 > C_5 < NE         < A_0 PLUS .ENDL.
+
+COUT(0, SP, LTS,  SP, SP, 0, COL, SP)                             C_0 > C_0 < LT         < A_0 PLUS .ENDL
+COUT(0, SP, LTS,  SP, SP, 1, COL, SP)                             C_0 > C_1 < LT         < A_0 PLUS .ENDL
+COUT(1, SP, LTS,  SP, SP, 0, COL, SP)                             C_1 > C_0 < LT         < A_0 PLUS .ENDL
+COUT(1, SP, LTS,  SP, SP, 1, COL, SP)                             C_1 > C_1 < LT         < A_0 PLUS .ENDL
+COUT(3, SP, LTS,  SP, SP, 3, COL, SP)                             C_3 > C_3 < LT         < A_0 PLUS .ENDL
+COUT(3, SP, LTS,  SP, SP, 5, COL, SP)                             C_3 > C_5 < LT         < A_0 PLUS .ENDL
+COUT(5, SP, LTS,  SP, SP, 3, COL, SP)                             C_5 > C_3 < LT         < A_0 PLUS .ENDL
+COUT(5, SP, LTS,  SP, SP, 5, COL, SP)                             C_5 > C_5 < LT         < A_0 PLUS .ENDL.
+
+COUT(0, SP, LTS, EQS, SP, 0, COL, SP)                             C_0 > C_0 < LE         < A_0 PLUS .ENDL
+COUT(0, SP, LTS, EQS, SP, 1, COL, SP)                             C_0 > C_1 < LE         < A_0 PLUS .ENDL
+COUT(1, SP, LTS, EQS, SP, 0, COL, SP)                             C_1 > C_0 < LE         < A_0 PLUS .ENDL
+COUT(1, SP, LTS, EQS, SP, 1, COL, SP)                             C_1 > C_1 < LE         < A_0 PLUS .ENDL
+COUT(3, SP, LTS, EQS, SP, 3, COL, SP)                             C_3 > C_3 < LE         < A_0 PLUS .ENDL
+COUT(3, SP, LTS, EQS, SP, 5, COL, SP)                             C_3 > C_5 < LE         < A_0 PLUS .ENDL
+COUT(5, SP, LTS, EQS, SP, 3, COL, SP)                             C_5 > C_3 < LE         < A_0 PLUS .ENDL
+COUT(5, SP, LTS, EQS, SP, 5, COL, SP)                             C_5 > C_5 < LE         < A_0 PLUS .ENDL.
+
+COUT(0, SP, GTS,  SP, SP, 0, COL, SP)                             C_0 > C_0 < GT         < A_0 PLUS .ENDL
+COUT(0, SP, GTS,  SP, SP, 1, COL, SP)                             C_0 > C_1 < GT         < A_0 PLUS .ENDL
+COUT(1, SP, GTS,  SP, SP, 0, COL, SP)                             C_1 > C_0 < GT         < A_0 PLUS .ENDL
+COUT(1, SP, GTS,  SP, SP, 1, COL, SP)                             C_1 > C_1 < GT         < A_0 PLUS .ENDL
+COUT(3, SP, GTS,  SP, SP, 3, COL, SP)                             C_3 > C_3 < GT         < A_0 PLUS .ENDL
+COUT(3, SP, GTS,  SP, SP, 5, COL, SP)                             C_3 > C_5 < GT         < A_0 PLUS .ENDL
+COUT(5, SP, GTS,  SP, SP, 3, COL, SP)                             C_5 > C_3 < GT         < A_0 PLUS .ENDL
+COUT(5, SP, GTS,  SP, SP, 5, COL, SP)                             C_5 > C_5 < GT         < A_0 PLUS .ENDL.
+
+COUT(0, SP, GTS, EQS, SP, 0, COL, SP)                             C_0 > C_0 < GE         < A_0 PLUS .ENDL
+COUT(0, SP, GTS, EQS, SP, 1, COL, SP)                             C_0 > C_1 < GE         < A_0 PLUS .ENDL
+COUT(1, SP, GTS, EQS, SP, 0, COL, SP)                             C_1 > C_0 < GE         < A_0 PLUS .ENDL
+COUT(1, SP, GTS, EQS, SP, 1, COL, SP)                             C_1 > C_1 < GE         < A_0 PLUS .ENDL
+COUT(3, SP, GTS, EQS, SP, 3, COL, SP)                             C_3 > C_3 < GE         < A_0 PLUS .ENDL
+COUT(3, SP, GTS, EQS, SP, 5, COL, SP)                             C_3 > C_5 < GE         < A_0 PLUS .ENDL
+COUT(5, SP, GTS, EQS, SP, 3, COL, SP)                             C_5 > C_3 < GE         < A_0 PLUS .ENDL
+COUT(5, SP, GTS, EQS, SP, 5, COL, SP)                             C_5 > C_5 < GE         < A_0 PLUS .ENDL.

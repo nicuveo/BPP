@@ -1,0 +1,13 @@
+Brain++ is the stupidest idea ever: what if I preprocessed Brainfuck files with the C preprocessor? What if I used BOOST_PP?
+The result is Brain++: a collection of utility functions and constants for Brainfuck.
+
+Are included:
+  * numerical constants from 0 to 255,
+  * ascii constants covering most of the ascii table,
+  * main mathematical binary operators,
+  * memory operations (cp, mv...),
+  * boolean logic,
+  * string operations,
+  * a small test file.
+
+For lulz and glory.

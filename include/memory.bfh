@@ -1,0 +1,50 @@
+#ifndef MEMORY_BFH_
+# define MEMORY_BFH_
+
+
+
+//##########################################
+// includes
+
+# include "seq.bfh"
+
+
+
+//##########################################
+// exported
+
+// MV:
+//   @DEST <- @0
+//   @0    <- 0
+//   dest cell is a N/P sequence
+# define MV(DEST) MV_(M_SEQ_EVAL(DEST), M_SEQ_EVAL(M_SEQ_OPPOSITE(DEST)))
+
+// MV_N:
+//   @1 <- @0
+//   @0 <-  0
+# define MV_N MV((N))
+
+// MV_P:
+//   @-1 <- @0
+//   @0  <-  0
+# define MV_P MV((P))
+
+// CP:
+//   @DEST <- @0
+//   @0    <- @0
+//   @1    <- 0
+//   warning: erases next cell (used as buffer)
+//   (therefore, do NOT use with (N))
+# define CP(DEST) CP_(M_SEQ_EVAL(DEST), M_SEQ_EVAL(M_SEQ_OPPOSITE(DEST)))
+
+
+
+//##########################################
+// internal
+
+# define MV_(F, B) F[-]B [-F+B]
+# define CP_(F, B) >[-]< F[-]B [- F+B >+<] >[-<+>]<
+
+
+
+#endif /* !MEMORY_BFH_ */

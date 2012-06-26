@@ -1,0 +1,43 @@
+#ifndef BOOL_BFH_
+# define BOOL_BFH_
+
+
+
+//##########################################
+// includes
+
+# include "constants.bfh"
+# include "memory.bfh"
+
+
+
+//##########################################
+// exported
+
+# define TRUE  C_1
+# define FALSE C_0
+
+
+// NOT:
+//   @1 <- not @0
+//   @0 <- 0
+//   moves to @1
+# define NOT > TRUE < [FALSE > FALSE <] >
+
+// AND:
+//   @2 <- @0 and @1
+//   @1 <- 0
+//   @0 <- 0
+//   moves to @2
+# define AND >> C_0 > FALSE <<< [ C_0 >> + << ] > [ C_0 > + < ] > [- [C_0 > TRUE <]] >
+
+// OR:
+//   @2 <- @0 or @1
+//   @1 <- 0
+//   @0 <- 0
+//   moves to @2
+# define OR >> FALSE << [ C_0 >> TRUE << ] > [ C_0 > TRUE < ] >
+
+
+
+#endif /* !BOOL_BFH_ */

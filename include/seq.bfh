@@ -1,0 +1,56 @@
+#ifndef SEQ_BFH_
+# define SEQ_BFH_
+
+
+
+//##########################################
+// includes
+
+# ifndef BOOST_PP_VARIADICS
+#  define BOOST_PP_VARIADICS
+# endif
+# include <boost/preprocessor.hpp>
+
+
+
+//##########################################
+// exported
+
+// opposite:
+//   P -> N
+//   N -> P
+# define M_OPPOSITE(D) BOOST_PP_CAT(M_OPPOSITE_, D)
+
+// eval:
+//   P -> <
+//   N -> >
+# define M_EVAL(D) BOOST_PP_CAT(M_EVAL_, D)
+
+// seq-opposite:
+//   (P)(P)(P) -> (N)(N)(N)
+//   (N)(N)(N) -> (P)(P)(P)
+# define M_SEQ_OPPOSITE(M_SEQ) BOOST_PP_SEQ_TRANSFORM(M_SEQ_OPPOSITE_, _, M_SEQ)
+
+// seq-opposite:
+//   (P)(P)(P) -> <<<
+//   (N)(N)(N) -> >>>
+# define M_SEQ_EVAL(M_SEQ) BOOST_PP_SEQ_FOR_EACH(M_SEQ_EVAL_, _, M_SEQ)
+
+
+
+//##########################################
+// internal
+
+# define M_OPPOSITE_P N
+# define M_OPPOSITE_N P
+
+# define M_EVAL_P <
+# define M_EVAL_N >
+
+# define M_SEQ_OPPOSITE_(S, D, E) M_OPPOSITE(E)
+
+# define M_SEQ_EVAL_(R, D, E) M_EVAL(E)
+
+
+
+#endif /* !SEQ_BFH_ */

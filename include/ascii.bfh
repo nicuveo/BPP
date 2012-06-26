@@ -1,0 +1,94 @@
+#ifndef ASCII_BFH_
+# define ASCII_BFH_
+
+
+
+//##########################################
+// includes
+
+# include "constants.bfh"
+
+
+
+//##########################################
+// exported
+
+# define A_LF C_10
+# define A_SP C_32
+
+# define A_EXM C_33
+
+# define A_0 C_48
+# define A_1 C_49
+# define A_2 C_50
+# define A_3 C_51
+# define A_4 C_52
+# define A_5 C_53
+# define A_6 C_54
+# define A_7 C_55
+# define A_8 C_56
+# define A_9 C_57
+
+# define A_COL  C_58
+# define A_SCOL C_59
+# define A_LTS  C_60
+# define A_EQS  C_61
+# define A_GTS  C_62
+
+# define A_A C_65
+# define A_B C_66
+# define A_C C_67
+# define A_D C_68
+# define A_E C_69
+# define A_F C_70
+# define A_G C_71
+# define A_H C_72
+# define A_I C_73
+# define A_J C_74
+# define A_K C_75
+# define A_L C_76
+# define A_M C_77
+# define A_N C_78
+# define A_O C_79
+# define A_P C_80
+# define A_Q C_81
+# define A_R C_82
+# define A_S C_83
+# define A_T C_84
+# define A_U C_85
+# define A_V C_86
+# define A_W C_87
+# define A_X C_88
+# define A_Y C_89
+# define A_Z C_90
+
+# define A_a C_97
+# define A_b C_98
+# define A_c C_99
+# define A_d C_100
+# define A_e C_101
+# define A_f C_102
+# define A_g C_103
+# define A_h C_104
+# define A_i C_105
+# define A_j C_106
+# define A_k C_107
+# define A_l C_108
+# define A_m C_109
+# define A_n C_110
+# define A_o C_111
+# define A_p C_112
+# define A_q C_113
+# define A_r C_114
+# define A_s C_115
+# define A_t C_116
+# define A_u C_117
+# define A_v C_118
+# define A_w C_119
+# define A_x C_120
+# define A_y C_121
+# define A_z C_122
+
+
+
+#endif /* !ASCII_BFH_ */
