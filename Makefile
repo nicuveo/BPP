@@ -3,7 +3,7 @@
 
 
 FILES = $(wildcard src/*.bfp)
-OUT = $(addprefix bin/, $(notdir $(FILES:.bfp=.bf)))
+OUT = $(addprefix out/, $(notdir $(FILES:.bfp=.bf)))
 
 
 
@@ -17,5 +17,5 @@ $(OUT):
 
 
 
-dependency_rule = bin/$(notdir $(1:.bfp=.bf)): $1 include/*.bfh
+dependency_rule = out/$(notdir $(1:.bfp=.bf)): $1 include/*.bfh
 $(foreach file,$(FILES),$(eval $(call dependency_rule,$(file))))
