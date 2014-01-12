@@ -4,6 +4,7 @@
 
 FILES = $(wildcard src/*.bfp)
 OUT = $(addprefix out/, $(notdir $(FILES:.bfp=.bf)))
+SED = ':a;s/  \+/ /;s/+ +/++/;s/- -/--/;s/< </<</;s/> >/>>/;s/+ \?-//;s/- \?+//;s/< \?>//;s/> \?<//;ta'
 
 
 
@@ -12,8 +13,11 @@ all: $(OUT)
 clean:
 	rm -fv $(OUT)
 
+distclean: clean;
+
 $(OUT):
-	cpp -I include $< | egrep -v "^#" | tr -d '[:space:]' > $@
+	@echo "cpp -I include -P $< | sed '<magic>' > $@"
+	@cpp -I include -P $< | sed $(SED) > $@
 
 
 
