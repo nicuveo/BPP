@@ -9,7 +9,7 @@ Features include:
   * numerical constants from 0 to 255,
   * ascii constants covering most of the ascii table,
   * main mathematical binary operators,
-  * memory operations (cp, mv...),
+  * memory operations (cp, mv...) **(deprecated, because not stack-based)**,
   * boolean logic,
   * string operations,
   * stack manipulation,
