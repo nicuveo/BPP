@@ -3,40 +3,26 @@
 
 
 
-//##########################################
+//######################################################################
 // includes
 
-# include "constants.bfh"
 # include "memory.bfh"
+# include "constants.bfh"
 
 
 
-//##########################################
+//######################################################################
 // exported
 
-# define TRUE  C_1
-# define FALSE C_0
+# define TRUE       C_1
+# define FALSE      C_0
 
+# define BOOL       [>+<[-]] >[-<+>]<
+# define NOT        [>+<[-]]+>[-<->]<
 
-// NOT:
-//   @1 <- not @0
-//   @0 <- 0
-//   moves to @1
-# define NOT > TRUE < [FALSE > FALSE <] >
-
-// AND:
-//   @2 <- @0 and @1
-//   @1 <- 0
-//   @0 <- 0
-//   moves to @2
-# define AND >> C_0 > FALSE <<< [ C_0 >> + << ] > [ C_0 > + < ] > [- [C_0 > TRUE <]] >
-
-// OR:
-//   @2 <- @0 or @1
-//   @1 <- 0
-//   @0 <- 0
-//   moves to @2
-# define OR >> FALSE << [ C_0 >> TRUE << ] > [ C_0 > TRUE < ] >
+# define AND        MUL BOOL
+# define OR         ADD BOOL
+# define XOR        NE
 
 
 

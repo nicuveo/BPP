@@ -3,114 +3,131 @@
 #include "string.bfh"
 
 
-COUT(N, O, T, SP, T, R, U, E, COL, SP, SP)                        TRUE  NOT              < A_0 PLUS .ENDL
-COUT(N, O, T, SP, F, A, L, S, E,  COL, SP)                        FALSE NOT              < A_0 PLUS .ENDL.
-
-COUT(T, R, U, E, SP, SP, O, R, SP, T, R, U, E, COL, SP, SP)       TRUE  > TRUE  < OR     < A_0 PLUS .ENDL
-COUT(T, R, U, E, SP, SP, O, R, SP, F, A, L, S, E,  COL, SP)       TRUE  > FALSE < OR     < A_0 PLUS .ENDL
-COUT(F, A, L, S, E,  SP, O, R, SP, T, R, U, E, COL, SP, SP)       FALSE > TRUE  < OR     < A_0 PLUS .ENDL
-COUT(F, A, L, S, E,  SP, O, R, SP, F, A, L, S, E,  COL, SP)       FALSE > FALSE < OR     < A_0 PLUS .ENDL.
-
-COUT(T, R, U, E, SP, SP, A, N, D, SP, T, R, U, E, COL, SP, SP)    TRUE  > TRUE  < AND    < A_0 PLUS .ENDL
-COUT(T, R, U, E, SP, SP, A, N, D, SP, F, A, L, S, E,  COL, SP)    TRUE  > FALSE < AND    < A_0 PLUS .ENDL
-COUT(F, A, L, S, E,  SP, A, N, D, SP, T, R, U, E, COL, SP, SP)    FALSE > TRUE  < AND    < A_0 PLUS .ENDL
-COUT(F, A, L, S, E,  SP, A, N, D, SP, F, A, L, S, E,  COL, SP)    FALSE > FALSE < AND    < A_0 PLUS .ENDL..
+#define PC  ++++++++++++++++++++++++++++++++++++++++++++++++ .
+#define PCL PC ENDL
 
 
-COUT(0, SP,  SP, EQS, SP, 0, COL, SP)                             C_0 > C_0 < EQ         < A_0 PLUS .ENDL
-COUT(0, SP,  SP, EQS, SP, 1, COL, SP)                             C_0 > C_1 < EQ         < A_0 PLUS .ENDL
-COUT(1, SP,  SP, EQS, SP, 0, COL, SP)                             C_1 > C_0 < EQ         < A_0 PLUS .ENDL
-COUT(1, SP,  SP, EQS, SP, 1, COL, SP)                             C_1 > C_1 < EQ         < A_0 PLUS .ENDL
-COUT(3, SP,  SP, EQS, SP, 3, COL, SP)                             C_3 > C_3 < EQ         < A_0 PLUS .ENDL
-COUT(3, SP,  SP, EQS, SP, 5, COL, SP)                             C_3 > C_5 < EQ         < A_0 PLUS .ENDL
-COUT(5, SP,  SP, EQS, SP, 3, COL, SP)                             C_5 > C_3 < EQ         < A_0 PLUS .ENDL
-COUT(5, SP,  SP, EQS, SP, 5, COL, SP)                             C_5 > C_5 < EQ         < A_0 PLUS .ENDL.
+C_0 COUT(B, O, O, L,  SP, SP, SP, SP, SP, 2, COL, SP, SP)             TRUE  BOOL             PCL
+C_0 COUT(B, O, O, L,  SP, SP,  T,  R,  U, E, COL, SP, SP)             TRUE  BOOL             PCL
+C_0 COUT(B, O, O, L,  SP,  F,  A,  L,  S, E, COL, SP, SP)             FALSE BOOL             PCL.
+C_0 COUT(N, O, T, SP, SP, SP, SP, SP, SP, 2, COL, SP, SP)             TRUE  NOT              PCL
+C_0 COUT(N, O, T, SP, SP, SP,  T,  R,  U, E, COL, SP, SP)             TRUE  NOT              PCL
+C_0 COUT(N, O, T, SP, SP,  F,  A,  L,  S, E, COL, SP, SP)             FALSE NOT              PCL.
 
-COUT(0, SP, EXM, EQS, SP, 0, COL, SP)                             C_0 > C_0 < NE         < A_0 PLUS .ENDL
-COUT(0, SP, EXM, EQS, SP, 1, COL, SP)                             C_0 > C_1 < NE         < A_0 PLUS .ENDL
-COUT(1, SP, EXM, EQS, SP, 0, COL, SP)                             C_1 > C_0 < NE         < A_0 PLUS .ENDL
-COUT(1, SP, EXM, EQS, SP, 1, COL, SP)                             C_1 > C_1 < NE         < A_0 PLUS .ENDL
-COUT(3, SP, EXM, EQS, SP, 3, COL, SP)                             C_3 > C_3 < NE         < A_0 PLUS .ENDL
-COUT(3, SP, EXM, EQS, SP, 5, COL, SP)                             C_3 > C_5 < NE         < A_0 PLUS .ENDL
-COUT(5, SP, EXM, EQS, SP, 3, COL, SP)                             C_5 > C_3 < NE         < A_0 PLUS .ENDL
-COUT(5, SP, EXM, EQS, SP, 5, COL, SP)                             C_5 > C_5 < NE         < A_0 PLUS .ENDL.
+C_0 COUT(T, R, U, E, SP, SP, O, R, SP, T, R, U, E, COL, SP, SP)       TRUE  > TRUE  OR       PCL
+C_0 COUT(T, R, U, E, SP, SP, O, R, SP, F, A, L, S, E,  COL, SP)       TRUE  > FALSE OR       PCL
+C_0 COUT(F, A, L, S, E,  SP, O, R, SP, T, R, U, E, COL, SP, SP)       FALSE > TRUE  OR       PCL
+C_0 COUT(F, A, L, S, E,  SP, O, R, SP, F, A, L, S, E,  COL, SP)       FALSE > FALSE OR       PCL.
 
-COUT(0, SP, LTS,  SP, SP, 0, COL, SP)                             C_0 > C_0 < LT         < A_0 PLUS .ENDL
-COUT(0, SP, LTS,  SP, SP, 1, COL, SP)                             C_0 > C_1 < LT         < A_0 PLUS .ENDL
-COUT(1, SP, LTS,  SP, SP, 0, COL, SP)                             C_1 > C_0 < LT         < A_0 PLUS .ENDL
-COUT(1, SP, LTS,  SP, SP, 1, COL, SP)                             C_1 > C_1 < LT         < A_0 PLUS .ENDL
-COUT(3, SP, LTS,  SP, SP, 3, COL, SP)                             C_3 > C_3 < LT         < A_0 PLUS .ENDL
-COUT(3, SP, LTS,  SP, SP, 5, COL, SP)                             C_3 > C_5 < LT         < A_0 PLUS .ENDL
-COUT(5, SP, LTS,  SP, SP, 3, COL, SP)                             C_5 > C_3 < LT         < A_0 PLUS .ENDL
-COUT(5, SP, LTS,  SP, SP, 5, COL, SP)                             C_5 > C_5 < LT         < A_0 PLUS .ENDL.
-
-COUT(0, SP, LTS, EQS, SP, 0, COL, SP)                             C_0 > C_0 < LE         < A_0 PLUS .ENDL
-COUT(0, SP, LTS, EQS, SP, 1, COL, SP)                             C_0 > C_1 < LE         < A_0 PLUS .ENDL
-COUT(1, SP, LTS, EQS, SP, 0, COL, SP)                             C_1 > C_0 < LE         < A_0 PLUS .ENDL
-COUT(1, SP, LTS, EQS, SP, 1, COL, SP)                             C_1 > C_1 < LE         < A_0 PLUS .ENDL
-COUT(3, SP, LTS, EQS, SP, 3, COL, SP)                             C_3 > C_3 < LE         < A_0 PLUS .ENDL
-COUT(3, SP, LTS, EQS, SP, 5, COL, SP)                             C_3 > C_5 < LE         < A_0 PLUS .ENDL
-COUT(5, SP, LTS, EQS, SP, 3, COL, SP)                             C_5 > C_3 < LE         < A_0 PLUS .ENDL
-COUT(5, SP, LTS, EQS, SP, 5, COL, SP)                             C_5 > C_5 < LE         < A_0 PLUS .ENDL.
-
-COUT(0, SP, GTS,  SP, SP, 0, COL, SP)                             C_0 > C_0 < GT         < A_0 PLUS .ENDL
-COUT(0, SP, GTS,  SP, SP, 1, COL, SP)                             C_0 > C_1 < GT         < A_0 PLUS .ENDL
-COUT(1, SP, GTS,  SP, SP, 0, COL, SP)                             C_1 > C_0 < GT         < A_0 PLUS .ENDL
-COUT(1, SP, GTS,  SP, SP, 1, COL, SP)                             C_1 > C_1 < GT         < A_0 PLUS .ENDL
-COUT(3, SP, GTS,  SP, SP, 3, COL, SP)                             C_3 > C_3 < GT         < A_0 PLUS .ENDL
-COUT(3, SP, GTS,  SP, SP, 5, COL, SP)                             C_3 > C_5 < GT         < A_0 PLUS .ENDL
-COUT(5, SP, GTS,  SP, SP, 3, COL, SP)                             C_5 > C_3 < GT         < A_0 PLUS .ENDL
-COUT(5, SP, GTS,  SP, SP, 5, COL, SP)                             C_5 > C_5 < GT         < A_0 PLUS .ENDL.
-
-COUT(0, SP, GTS, EQS, SP, 0, COL, SP)                             C_0 > C_0 < GE         < A_0 PLUS .ENDL
-COUT(0, SP, GTS, EQS, SP, 1, COL, SP)                             C_0 > C_1 < GE         < A_0 PLUS .ENDL
-COUT(1, SP, GTS, EQS, SP, 0, COL, SP)                             C_1 > C_0 < GE         < A_0 PLUS .ENDL
-COUT(1, SP, GTS, EQS, SP, 1, COL, SP)                             C_1 > C_1 < GE         < A_0 PLUS .ENDL
-COUT(3, SP, GTS, EQS, SP, 3, COL, SP)                             C_3 > C_3 < GE         < A_0 PLUS .ENDL
-COUT(3, SP, GTS, EQS, SP, 5, COL, SP)                             C_3 > C_5 < GE         < A_0 PLUS .ENDL
-COUT(5, SP, GTS, EQS, SP, 3, COL, SP)                             C_5 > C_3 < GE         < A_0 PLUS .ENDL
-COUT(5, SP, GTS, EQS, SP, 5, COL, SP)                             C_5 > C_5 < GE         < A_0 PLUS .ENDL..
+C_0 COUT(T, R, U, E, SP, SP, A, N, D, SP, T, R, U, E, COL, SP, SP)    TRUE  > TRUE  AND      PCL
+C_0 COUT(T, R, U, E, SP, SP, A, N, D, SP, F, A, L, S, E,  COL, SP)    TRUE  > FALSE AND      PCL
+C_0 COUT(F, A, L, S, E,  SP, A, N, D, SP, T, R, U, E, COL, SP, SP)    FALSE > TRUE  AND      PCL
+C_0 COUT(F, A, L, S, E,  SP, A, N, D, SP, F, A, L, S, E,  COL, SP)    FALSE > FALSE AND      PCL..
 
 
-COUT(0, SP, PLUSS, SP, 0, SP, EQS, SP)                            C_0 > C_0 < PLUS       < A_0 PLUS .ENDL
-COUT(0, SP, PLUSS, SP, 1, SP, EQS, SP)                            C_0 > C_1 < PLUS       < A_0 PLUS .ENDL
-COUT(1, SP, PLUSS, SP, 0, SP, EQS, SP)                            C_1 > C_0 < PLUS       < A_0 PLUS .ENDL
-COUT(1, SP, PLUSS, SP, 1, SP, EQS, SP)                            C_1 > C_1 < PLUS       < A_0 PLUS .ENDL
-COUT(3, SP, PLUSS, SP, 3, SP, EQS, SP)                            C_3 > C_3 < PLUS       < A_0 PLUS .ENDL
-COUT(3, SP, PLUSS, SP, 5, SP, EQS, SP)                            C_3 > C_5 < PLUS       < A_0 PLUS .ENDL
-COUT(5, SP, PLUSS, SP, 3, SP, EQS, SP)                            C_5 > C_3 < PLUS       < A_0 PLUS .ENDL
-COUT(5, SP, PLUSS, SP, 2, SP, EQS, SP)                            C_5 > C_2 < PLUS       < A_0 PLUS .ENDL.
+C_0 COUT(0, SP, EQS, EQS, SP, 0, COL, SP)                             C_0 > C_0 EQ           PCL
+C_0 COUT(0, SP, EQS, EQS, SP, 1, COL, SP)                             C_1 > C_0 EQ           PCL
+C_0 COUT(1, SP, EQS, EQS, SP, 0, COL, SP)                             C_0 > C_1 EQ           PCL
+C_0 COUT(1, SP, EQS, EQS, SP, 1, COL, SP)                             C_1 > C_1 EQ           PCL
+C_0 COUT(3, SP, EQS, EQS, SP, 3, COL, SP)                             C_3 > C_3 EQ           PCL
+C_0 COUT(3, SP, EQS, EQS, SP, 5, COL, SP)                             C_5 > C_3 EQ           PCL
+C_0 COUT(5, SP, EQS, EQS, SP, 3, COL, SP)                             C_3 > C_5 EQ           PCL
+C_0 COUT(5, SP, EQS, EQS, SP, 5, COL, SP)                             C_5 > C_5 EQ           PCL.
 
-COUT(0, SP, MINUSS, SP, 0, SP, EQS, SP)                           C_0 > C_0 < MINUS      < A_0 PLUS .ENDL
-COUT(1, SP, MINUSS, SP, 0, SP, EQS, SP)                           C_1 > C_0 < MINUS      < A_0 PLUS .ENDL
-COUT(1, SP, MINUSS, SP, 1, SP, EQS, SP)                           C_1 > C_1 < MINUS      < A_0 PLUS .ENDL
-COUT(3, SP, MINUSS, SP, 3, SP, EQS, SP)                           C_3 > C_3 < MINUS      < A_0 PLUS .ENDL
-COUT(5, SP, MINUSS, SP, 3, SP, EQS, SP)                           C_5 > C_3 < MINUS      < A_0 PLUS .ENDL
-COUT(5, SP, MINUSS, SP, 5, SP, EQS, SP)                           C_5 > C_5 < MINUS      < A_0 PLUS .ENDL.
+C_0 COUT(0, SP, EXM, EQS, SP, 0, COL, SP)                             C_0 > C_0 NE           PCL
+C_0 COUT(0, SP, EXM, EQS, SP, 1, COL, SP)                             C_1 > C_0 NE           PCL
+C_0 COUT(1, SP, EXM, EQS, SP, 0, COL, SP)                             C_0 > C_1 NE           PCL
+C_0 COUT(1, SP, EXM, EQS, SP, 1, COL, SP)                             C_1 > C_1 NE           PCL
+C_0 COUT(3, SP, EXM, EQS, SP, 3, COL, SP)                             C_3 > C_3 NE           PCL
+C_0 COUT(3, SP, EXM, EQS, SP, 5, COL, SP)                             C_5 > C_3 NE           PCL
+C_0 COUT(5, SP, EXM, EQS, SP, 3, COL, SP)                             C_3 > C_5 NE           PCL
+C_0 COUT(5, SP, EXM, EQS, SP, 5, COL, SP)                             C_5 > C_5 NE           PCL.
 
-COUT(0, SP, STAR, SP, 0, SP, EQS, SP)                             C_0 > C_0 < MUL        < A_0 PLUS .ENDL
-COUT(0, SP, STAR, SP, 1, SP, EQS, SP)                             C_0 > C_1 < MUL        < A_0 PLUS .ENDL
-COUT(1, SP, STAR, SP, 0, SP, EQS, SP)                             C_1 > C_0 < MUL        < A_0 PLUS .ENDL
-COUT(1, SP, STAR, SP, 1, SP, EQS, SP)                             C_1 > C_1 < MUL        < A_0 PLUS .ENDL
-COUT(2, SP, STAR, SP, 2, SP, EQS, SP)                             C_2 > C_2 < MUL        < A_0 PLUS .ENDL
-COUT(2, SP, STAR, SP, 3, SP, EQS, SP)                             C_2 > C_3 < MUL        < A_0 PLUS .ENDL
-COUT(3, SP, STAR, SP, 2, SP, EQS, SP)                             C_3 > C_2 < MUL        < A_0 PLUS .ENDL
-COUT(3, SP, STAR, SP, 3, SP, EQS, SP)                             C_3 > C_3 < MUL        < A_0 PLUS .ENDL.
+C_0 COUT(0, SP, LTS,  SP, SP, 0, COL, SP)                             C_0 > C_0 LT           PCL
+C_0 COUT(0, SP, LTS,  SP, SP, 1, COL, SP)                             C_1 > C_0 LT           PCL
+C_0 COUT(1, SP, LTS,  SP, SP, 0, COL, SP)                             C_0 > C_1 LT           PCL
+C_0 COUT(1, SP, LTS,  SP, SP, 1, COL, SP)                             C_1 > C_1 LT           PCL
+C_0 COUT(3, SP, LTS,  SP, SP, 3, COL, SP)                             C_3 > C_3 LT           PCL
+C_0 COUT(3, SP, LTS,  SP, SP, 5, COL, SP)                             C_5 > C_3 LT           PCL
+C_0 COUT(5, SP, LTS,  SP, SP, 3, COL, SP)                             C_3 > C_5 LT           PCL
+C_0 COUT(5, SP, LTS,  SP, SP, 5, COL, SP)                             C_5 > C_5 LT           PCL.
 
-COUT(1, SP, SLASH, SP, 1, SP, EQS, SP)                            C_1 > C_1 < DIV        < A_0 PLUS .ENDL
-COUT(1, SP, SLASH, SP, 3, SP, EQS, SP)                            C_1 > C_3 < DIV        < A_0 PLUS .ENDL
-COUT(3, SP, SLASH, SP, 1, SP, EQS, SP)                            C_3 > C_1 < DIV        < A_0 PLUS .ENDL
-COUT(3, SP, SLASH, SP, 3, SP, EQS, SP)                            C_3 > C_3 < DIV        < A_0 PLUS .ENDL
-COUT(2, SP, SLASH, SP, 2, SP, EQS, SP)                            C_2 > C_2 < DIV        < A_0 PLUS .ENDL
-COUT(2, SP, SLASH, SP, 7, SP, EQS, SP)                            C_2 > C_7 < DIV        < A_0 PLUS .ENDL
-COUT(7, SP, SLASH, SP, 2, SP, EQS, SP)                            C_7 > C_2 < DIV        < A_0 PLUS .ENDL
-COUT(7, SP, SLASH, SP, 7, SP, EQS, SP)                            C_7 > C_7 < DIV        < A_0 PLUS .ENDL.
+C_0 COUT(0, SP, LTS, EQS, SP, 0, COL, SP)                             C_0 > C_0 LE           PCL
+C_0 COUT(0, SP, LTS, EQS, SP, 1, COL, SP)                             C_1 > C_0 LE           PCL
+C_0 COUT(1, SP, LTS, EQS, SP, 0, COL, SP)                             C_0 > C_1 LE           PCL
+C_0 COUT(1, SP, LTS, EQS, SP, 1, COL, SP)                             C_1 > C_1 LE           PCL
+C_0 COUT(3, SP, LTS, EQS, SP, 3, COL, SP)                             C_3 > C_3 LE           PCL
+C_0 COUT(3, SP, LTS, EQS, SP, 5, COL, SP)                             C_5 > C_3 LE           PCL
+C_0 COUT(5, SP, LTS, EQS, SP, 3, COL, SP)                             C_3 > C_5 LE           PCL
+C_0 COUT(5, SP, LTS, EQS, SP, 5, COL, SP)                             C_5 > C_5 LE           PCL.
 
-COUT(1, SP, PERCENT, SP, 1, SP, EQS, SP)                          C_1 > C_1 < MOD        < A_0 PLUS .ENDL
-COUT(1, SP, PERCENT, SP, 3, SP, EQS, SP)                          C_1 > C_3 < MOD        < A_0 PLUS .ENDL
-COUT(3, SP, PERCENT, SP, 1, SP, EQS, SP)                          C_3 > C_1 < MOD        < A_0 PLUS .ENDL
-COUT(3, SP, PERCENT, SP, 3, SP, EQS, SP)                          C_3 > C_3 < MOD        < A_0 PLUS .ENDL
-COUT(2, SP, PERCENT, SP, 2, SP, EQS, SP)                          C_2 > C_2 < MOD        < A_0 PLUS .ENDL
-COUT(2, SP, PERCENT, SP, 7, SP, EQS, SP)                          C_2 > C_7 < MOD        < A_0 PLUS .ENDL
-COUT(7, SP, PERCENT, SP, 2, SP, EQS, SP)                          C_7 > C_2 < MOD        < A_0 PLUS .ENDL
-COUT(7, SP, PERCENT, SP, 7, SP, EQS, SP)                          C_7 > C_7 < MOD        < A_0 PLUS .ENDL.
+C_0 COUT(0, SP, GTS,  SP, SP, 0, COL, SP)                             C_0 > C_0 GT           PCL
+C_0 COUT(0, SP, GTS,  SP, SP, 1, COL, SP)                             C_1 > C_0 GT           PCL
+C_0 COUT(1, SP, GTS,  SP, SP, 0, COL, SP)                             C_0 > C_1 GT           PCL
+C_0 COUT(1, SP, GTS,  SP, SP, 1, COL, SP)                             C_1 > C_1 GT           PCL
+C_0 COUT(3, SP, GTS,  SP, SP, 3, COL, SP)                             C_3 > C_3 GT           PCL
+C_0 COUT(3, SP, GTS,  SP, SP, 5, COL, SP)                             C_5 > C_3 GT           PCL
+C_0 COUT(5, SP, GTS,  SP, SP, 3, COL, SP)                             C_3 > C_5 GT           PCL
+C_0 COUT(5, SP, GTS,  SP, SP, 5, COL, SP)                             C_5 > C_5 GT           PCL.
+
+C_0 COUT(0, SP, GTS, EQS, SP, 0, COL, SP)                             C_0 > C_0 GE           PCL
+C_0 COUT(0, SP, GTS, EQS, SP, 1, COL, SP)                             C_1 > C_0 GE           PCL
+C_0 COUT(1, SP, GTS, EQS, SP, 0, COL, SP)                             C_0 > C_1 GE           PCL
+C_0 COUT(1, SP, GTS, EQS, SP, 1, COL, SP)                             C_1 > C_1 GE           PCL
+C_0 COUT(3, SP, GTS, EQS, SP, 3, COL, SP)                             C_3 > C_3 GE           PCL
+C_0 COUT(3, SP, GTS, EQS, SP, 5, COL, SP)                             C_5 > C_3 GE           PCL
+C_0 COUT(5, SP, GTS, EQS, SP, 3, COL, SP)                             C_3 > C_5 GE           PCL
+C_0 COUT(5, SP, GTS, EQS, SP, 5, COL, SP)                             C_5 > C_5 GE           PCL..
+
+
+C_0 COUT(0, SP,    SP, PLUSS, SP, 0, SP, EQS, SP)                     C_0 > C_0 ADD          PCL
+C_0 COUT(0, SP,    SP, PLUSS, SP, 1, SP, EQS, SP)                     C_1 > C_0 ADD          PCL
+C_0 COUT(1, SP,    SP, PLUSS, SP, 0, SP, EQS, SP)                     C_0 > C_1 ADD          PCL
+C_0 COUT(1, SP,    SP, PLUSS, SP, 1, SP, EQS, SP)                     C_1 > C_1 ADD          PCL
+C_0 COUT(3, SP,    SP, PLUSS, SP, 3, SP, EQS, SP)                     C_3 > C_3 ADD          PCL
+C_0 COUT(3, SP,    SP, PLUSS, SP, 5, SP, EQS, SP)                     C_5 > C_3 ADD          PCL
+C_0 COUT(5, SP,    SP, PLUSS, SP, 3, SP, EQS, SP)                     C_3 > C_5 ADD          PCL
+C_0 COUT(5, SP,    SP, PLUSS, SP, 2, SP, EQS, SP)                     C_2 > C_5 ADD          PCL.
+
+C_0 COUT(0, SP,    SP, MINUSS, SP, 0, SP, EQS, SP)                    C_0 > C_0 SUB          PCL
+C_0 COUT(1, SP,    SP, MINUSS, SP, 0, SP, EQS, SP)                    C_0 > C_1 SUB          PCL
+C_0 COUT(1, SP,    SP, MINUSS, SP, 1, SP, EQS, SP)                    C_1 > C_1 SUB          PCL
+C_0 COUT(3, SP,    SP, MINUSS, SP, 3, SP, EQS, SP)                    C_3 > C_3 SUB          PCL
+C_0 COUT(5, SP,    SP, MINUSS, SP, 3, SP, EQS, SP)                    C_3 > C_5 SUB          PCL
+C_0 COUT(5, SP,    SP, MINUSS, SP, 5, SP, EQS, SP)                    C_5 > C_5 SUB          PCL.
+
+C_0 COUT(0, SP,    SP, STAR, SP, 0, SP, EQS, SP)                      C_0 > C_0 MUL          PCL
+C_0 COUT(0, SP,    SP, STAR, SP, 1, SP, EQS, SP)                      C_1 > C_0 MUL          PCL
+C_0 COUT(1, SP,    SP, STAR, SP, 0, SP, EQS, SP)                      C_0 > C_1 MUL          PCL
+C_0 COUT(1, SP,    SP, STAR, SP, 1, SP, EQS, SP)                      C_1 > C_1 MUL          PCL
+C_0 COUT(2, SP,    SP, STAR, SP, 2, SP, EQS, SP)                      C_2 > C_2 MUL          PCL
+C_0 COUT(2, SP,    SP, STAR, SP, 3, SP, EQS, SP)                      C_3 > C_2 MUL          PCL
+C_0 COUT(3, SP,    SP, STAR, SP, 2, SP, EQS, SP)                      C_2 > C_3 MUL          PCL
+C_0 COUT(3, SP,    SP, STAR, SP, 3, SP, EQS, SP)                      C_3 > C_3 MUL          PCL.
+
+C_0 COUT(1, SP,    SP, SLASH, SP, 1, SP, EQS, SP)                     C_1 > C_1 DIV          PCL
+C_0 COUT(1, SP,    SP, SLASH, SP, 3, SP, EQS, SP)                     C_3 > C_1 DIV          PCL
+C_0 COUT(3, SP,    SP, SLASH, SP, 1, SP, EQS, SP)                     C_1 > C_3 DIV          PCL
+C_0 COUT(3, SP,    SP, SLASH, SP, 3, SP, EQS, SP)                     C_3 > C_3 DIV          PCL
+C_0 COUT(2, SP,    SP, SLASH, SP, 2, SP, EQS, SP)                     C_2 > C_2 DIV          PCL
+C_0 COUT(2, SP,    SP, SLASH, SP, 7, SP, EQS, SP)                     C_7 > C_2 DIV          PCL
+C_0 COUT(7, SP,    SP, SLASH, SP, 2, SP, EQS, SP)                     C_2 > C_7 DIV          PCL
+C_0 COUT(7, SP,    SP, SLASH, SP, 7, SP, EQS, SP)                     C_7 > C_7 DIV          PCL.
+
+C_0 COUT(1, SP,    SP, PERCENT, SP, 1, SP, EQS, SP)                   C_1 > C_1 MOD          PCL
+C_0 COUT(1, SP,    SP, PERCENT, SP, 3, SP, EQS, SP)                   C_3 > C_1 MOD          PCL
+C_0 COUT(3, SP,    SP, PERCENT, SP, 1, SP, EQS, SP)                   C_1 > C_3 MOD          PCL
+C_0 COUT(3, SP,    SP, PERCENT, SP, 3, SP, EQS, SP)                   C_3 > C_3 MOD          PCL
+C_0 COUT(2, SP,    SP, PERCENT, SP, 2, SP, EQS, SP)                   C_2 > C_2 MOD          PCL
+C_0 COUT(2, SP,    SP, PERCENT, SP, 7, SP, EQS, SP)                   C_7 > C_2 MOD          PCL
+C_0 COUT(7, SP,    SP, PERCENT, SP, 2, SP, EQS, SP)                   C_2 > C_7 MOD          PCL
+C_0 COUT(7, SP,    SP, PERCENT, SP, 7, SP, EQS, SP)                   C_7 > C_7 MOD          PCL.
+
+C_0 COUT(1, SP, SLASH, PERCENT, SP, 1, SP, EQS, SP)                   C_1 > C_1 DIVMOD   PC< PCL
+C_0 COUT(1, SP, SLASH, PERCENT, SP, 3, SP, EQS, SP)                   C_3 > C_1 DIVMOD   PC< PCL
+C_0 COUT(3, SP, SLASH, PERCENT, SP, 1, SP, EQS, SP)                   C_1 > C_3 DIVMOD   PC< PCL
+C_0 COUT(3, SP, SLASH, PERCENT, SP, 3, SP, EQS, SP)                   C_3 > C_3 DIVMOD   PC< PCL
+C_0 COUT(2, SP, SLASH, PERCENT, SP, 2, SP, EQS, SP)                   C_2 > C_2 DIVMOD   PC< PCL
+C_0 COUT(2, SP, SLASH, PERCENT, SP, 7, SP, EQS, SP)                   C_7 > C_2 DIVMOD   PC< PCL
+C_0 COUT(7, SP, SLASH, PERCENT, SP, 2, SP, EQS, SP)                   C_2 > C_7 DIVMOD   PC< PCL
+C_0 COUT(7, SP, SLASH, PERCENT, SP, 7, SP, EQS, SP)                   C_7 > C_7 DIVMOD   PC< PCL.

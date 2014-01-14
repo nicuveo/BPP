@@ -1,0 +1,32 @@
+# include "stack.bfh"
+# include "string.bfh"
+
+
+
+PUSHI(1) DUP ? C_0 < C_0 <
+PUSHI(2) DUP ? C_0 < C_0 <
+PUSHI(3) DUP ? C_0 < C_0 <
+
+ENDL CLEAR
+
+PUSHI(1) PUSHI(2) DUP2 ? C_0 < C_0 < C_0 < C_0 <
+PUSHI(2) PUSHI(3) DUP2 ? C_0 < C_0 < C_0 < C_0 <
+PUSHI(3) PUSHI(4) DUP2 ? C_0 < C_0 < C_0 < C_0 <
+
+ENDL CLEAR
+
+PUSHI(1) PUSHI(2) PUSHI(3) DUP3 ? C_0 < C_0 < C_0 < C_0 < C_0 < C_0 <
+PUSHI(2) PUSHI(3) PUSHI(4) DUP3 ? C_0 < C_0 < C_0 < C_0 < C_0 < C_0 <
+PUSHI(3) PUSHI(4) PUSHI(5) DUP3 ? C_0 < C_0 < C_0 < C_0 < C_0 < C_0 <
+
+ENDL CLEAR
+
+PUSHI(1) PUSHI(2) PUSHI(3) PUSHI(4) DUP4 ? C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 <
+PUSHI(2) PUSHI(3) PUSHI(4) PUSHI(5) DUP4 ? C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 <
+PUSHI(3) PUSHI(4) PUSHI(5) PUSHI(6) DUP4 ? C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 <
+
+ENDL CLEAR
+
+PUSHI(1) PUSHI(2) PUSHI(3) PUSHI(4) PUSHI(5) DUP5 ? C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 <
+PUSHI(2) PUSHI(3) PUSHI(4) PUSHI(5) PUSHI(6) DUP5 ? C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 <
+PUSHI(3) PUSHI(4) PUSHI(5) PUSHI(6) PUSHI(7) DUP5 ? C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 < C_0 <
