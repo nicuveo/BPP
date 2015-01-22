@@ -17,6 +17,9 @@
 # define A_SP C_32
 
 # define A_EXM C_33
+# define A_INT C_63
+# define A_POS C_39
+# define A_COM C_44
 
 # define A_PERCENT C_37
 
@@ -24,6 +27,10 @@
 # define A_PLUSS  C_43
 # define A_MINUSS C_45
 # define A_SLASH  C_47
+
+# define A_DOT C_46
+
+# define A_ARB C_64
 
 # define A_0 C_48
 # define A_1 C_49
