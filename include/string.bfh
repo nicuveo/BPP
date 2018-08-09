@@ -18,6 +18,16 @@
 # define COUT(...) > BOOST_PP_SEQ_FOR_EACH(COUT_, _, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)) POP
 # define ENDL A_LF .
 
+# define PRINT_DIGIT DUP PUSHC(0) ADD . POP
+# define PRINT_NUMBER                                \
+  DUP                                                \
+  DUP PUSHI(100) SWAP DIV [ PRINT_DIGIT CLEAR ] POP  \
+   PUSHI(100) SWAP MOD                               \
+   DUP PUSHI(10)  SWAP DIV [ PRINT_DIGIT CLEAR ] POP \
+   PUSHI(10)  SWAP MOD                               \
+   PRINT_DIGIT                                       \
+   POP                                               \
+
 
 
 //##########################################
