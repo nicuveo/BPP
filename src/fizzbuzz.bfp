@@ -1,0 +1,48 @@
+#include "bool.bfh"
+#include "math.bfh"
+#include "stack.bfh"
+#include "string.bfh"
+
+
+#define IS_DIVIDABLE_BY(N) PUSHI(N) SWAP MOD NOT
+#define IS_EQUAL_TO(N)     DUP PUSHI(N) EQ
+
+
+#define UPPER_BOUND 20
+
+
+PUSHI(UPPER_BOUND)
+
+[-
+DUP
+PUSHI(UPPER_BOUND)
+SUB
+
+DUP DUP
+IS_DIVIDABLE_BY(3)
+SWAP
+IS_DIVIDABLE_BY(5)
+
+PUSHI(2)
+MUL
+ADD
+
+IS_EQUAL_TO(3) [
+    COUT(f,i,z,z,b,u,z,z,EXM) ENDL
+CLEAR ] POP
+
+IS_EQUAL_TO(2) [
+    COUT(b,u,z,z,EXM) ENDL
+CLEAR ] POP
+
+IS_EQUAL_TO(1) [
+    COUT(f,i,z,z,EXM) ENDL
+CLEAR ] POP
+
+IS_EQUAL_TO(0) [
+    PUSHI(2) ROLL3
+    PRINT_NUMBER ENDL
+CLEAR ] POP
+
+POP POP
+]
