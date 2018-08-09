@@ -1,7 +1,7 @@
 Brain++
 =======
 
-Brain++ is the result of a deranged thought: what if I preprocessed Brainfuck files with the C++ preprocessor? What if I used BOOST_PP? I could define functions? Constants?
+Brain++ is the result of a stupid thought: what if I preprocessed Brainfuck files with the C preprocessor? What if I used BOOST_PP? I could define functions? Constants?
 
 The result is Brain++: a collection of utility functions and constants for Brainfuck. The goal is to provide some basic stack-based instructions to simplify Brainfuck usage.
 
@@ -15,5 +15,4 @@ Features include:
   * stack manipulation,
   * a few small test files.
 
-For lulz and glory.
-Documentation should occur someday.
+For great good.
