@@ -22,11 +22,11 @@
 # define PRINT_NUMBER                                \
   DUP                                                \
   DUP PUSHI(100) SWAP DIV [ PRINT_DIGIT CLEAR ] POP  \
-   PUSHI(100) SWAP MOD                               \
-   DUP PUSHI(10)  SWAP DIV [ PRINT_DIGIT CLEAR ] POP \
-   PUSHI(10)  SWAP MOD                               \
-   PRINT_DIGIT                                       \
-   POP                                               \
+  PUSHI(100) SWAP MOD                                \
+  DUP PUSHI(10)  SWAP DIV [ PRINT_DIGIT CLEAR ] POP  \
+  PUSHI(10)  SWAP MOD                                \
+  PRINT_DIGIT                                        \
+  POP                                                \
 
 
 
