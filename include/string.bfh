@@ -15,7 +15,7 @@
 //######################################################################
 // exported
 
-# define COUT(...) BOOST_PP_SEQ_FOR_EACH(COUT_, _, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))
+# define COUT(...) > BOOST_PP_SEQ_FOR_EACH(COUT_, _, BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)) POP
 # define ENDL A_LF .
 
 
