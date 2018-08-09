@@ -15,7 +15,7 @@
 // exported
 
 # define ADD      [-<+>]<
-# define SUB      [-<->]<
+# define SUB      <[->-<]>[-<+>]<
 # define MUL      <[->>+<<]>[->[->+<]>[-<+<<+>>>]<<]>[-]<<
 # define DIV      >>+ ROLL3 DUP2 GE [-<<<+> [->>+>+<<<]>>>[-<<<+>>>] < [-<->] < DUP2 GE]  < C_0 < C_0 <
 # define MOD                DUP2 GE [-<<    [->>+>+<<<]>>>[-<<<+>>>] < [-<->] < DUP2 GE] << C_0 >[-<+>]<
