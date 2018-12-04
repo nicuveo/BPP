@@ -12,17 +12,25 @@
 
 
 //######################################################################
-// exported
+// one byte
 
-# define TRUE       C_1
-# define FALSE      C_0
+# define TRUE   C_1
+# define FALSE  C_0
 
-# define BOOL       [>+<[-]] >[-<+>]<
-# define NOT        [>+<[-]]+>[-<->]<
+# define BOOL   [>+<[-]] >[-<+>]<
+# define NOT    [>+<[-]]+>[-<->]<
 
-# define AND        MUL BOOL
-# define OR         ADD BOOL
-# define XOR        NE
+# define AND    MUL BOOL
+# define OR     ADD BOOL
+# define XOR    NE
+
+
+
+//######################################################################
+// four bytes
+
+# define BOOL32 [>+<[-]] >[-<+>]<<[>>+<<[-]] >>[-<<+>>]<<<[>>>+<<<[-]] >>>[-<<<+>>>]<<<<[>>>>+<<<<[-]] >>>>[-<<<<+>>>>]< ADD ADD ADD BOOL
+# define NOT32  [>+<[-]]+>[-<->]<<[>>+<<[-]]+>>[-<<->>]<<<[>>>+<<<[-]]+>>>[-<<<->>>]<<<<[>>>>+<<<<[-]]+>>>>[-<<<<->>>>]< MUL MUL MUL BOOL
 
 
 
