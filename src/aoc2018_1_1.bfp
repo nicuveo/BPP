@@ -1,0 +1,34 @@
+#include "bool.bfh"
+#include "math.bfh"
+#include "stack.bfh"
+#include "ascii.bfh"
+#include "string.bfh"
+
+
+#define IS_EQUAL_TO(N)  DUP PUSHC(N) EQ
+#define NOT_EQUAL_TO(N) DUP PUSHC(N) NE
+#define INPUT_NUMBER                       \
+   >+[,                                     \
+     NOT_EQUAL_TO(LF) DUP PUSHI(1) ROLL4 [ \
+       POP                                 \
+       PUSHI(48) SWAP SUB                  \
+       SWAP PUSHI(10) MUL ADD              \
+       PUSHI(0) PUSHI(0)                   \
+     ] POP POP SWAP                        \
+   ] POP                                   \
+
+
+>,[
+  ?
+  IS_EQUAL_TO(PLUSS) [
+    POP CLEAR
+    INPUT_NUMBER
+    ADD
+  PUSHI(0) PUSHI(0) ] POP
+  IS_EQUAL_TO(MINUSS) [
+    POP CLEAR
+    INPUT_NUMBER
+    SWAP SUB
+  PUSHI(0) PUSHI(0) ] POP
+,]
+< PRINT_NUMBER ENDL
