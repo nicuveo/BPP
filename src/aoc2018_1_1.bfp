@@ -8,27 +8,27 @@
 #define IS_EQUAL_TO(N)  DUP PUSHC(N) EQ
 #define NOT_EQUAL_TO(N) DUP PUSHC(N) NE
 #define INPUT_NUMBER                       \
-   >+[,                                     \
-     NOT_EQUAL_TO(LF) DUP PUSHI(1) ROLL4 [ \
+   >>>>+[,?                                 \
+     NOT_EQUAL_TO(LF) DUP PUSHI(1) ROLL10 [ \
        POP                                 \
        PUSHI(48) SWAP SUB                  \
-       SWAP PUSHI(10) MUL ADD              \
-       PUSHI(0) PUSHI(0)                   \
-     ] POP POP SWAP                        \
-   ] POP                                   \
+       SWAP32 >>>PUSHI(10) MUL32 ADD32     \
+       >>>>>                               \
+     ] POP POP32 >>>>+++++++ ROLL8               \
+   ] POP32                                   \
 
 
->,[
+>>>>>>>,[
   ?
   IS_EQUAL_TO(PLUSS) [
     POP CLEAR
     INPUT_NUMBER
-    ADD
-  PUSHI(0) PUSHI(0) ] POP
+    ADD32
+  >>>>>] POP
   IS_EQUAL_TO(MINUSS) [
     POP CLEAR
     INPUT_NUMBER
-    SWAP SUB
-  PUSHI(0) PUSHI(0) ] POP
+    SWAP32 SUB32
+  >>>>>] POP
 ,]
-< PRINT_NUMBER ENDL
+POP32 PRINT_NUMBER ENDL
