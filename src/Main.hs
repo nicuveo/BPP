@@ -3,9 +3,9 @@ module Main where
 
 import           Assembler
 import           Compiler
-import           Grammar
 
 
+main :: IO ()
 main = do
   objs  <- either error return $ runCompiler testResolver "interactive"
   bfout <- either error return $ assemble verboseFormatter objs
@@ -13,8 +13,10 @@ main = do
 
 
 
+testResolver :: String -> Either String String
 testResolver "interactive" = return testData
 testResolver "other"       = return otherData
+testResolver _             = error "NIH"
 
 oldTestData :: String
 oldTestData = "// Test\

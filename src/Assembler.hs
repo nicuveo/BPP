@@ -3,7 +3,6 @@
 
 module Assembler where
 
-import           Data.List       as L
 import           Data.List.Split (chunksOf)
 import qualified Data.Map        as M
 
@@ -22,6 +21,7 @@ data Formatter = Formatter { formatRawBrainfuck   :: Int -> String -> String
                            }
 
 
+verboseFormatter :: Formatter
 verboseFormatter = Formatter fRaw fBFunc fAFunc fPost
   where padding level = [1..level] >> "  "
         fRaw   level rawbf  = unlines $ (padding level ++) <$> chunksOf 100 rawbf
@@ -34,6 +34,7 @@ verboseFormatter = Formatter fRaw fBFunc fAFunc fPost
         fPost = id
         render v = filter (`notElem` "+-[],.<>") $ unwords [n ++ "=" ++ show x | (n,x) <- v]
 
+denseFormatter :: Formatter
 denseFormatter = Formatter fRaw fBFunc fAFunc fPost
   where fRaw   _       = id
         fBFunc _ _ _   = ""
