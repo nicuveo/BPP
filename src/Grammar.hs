@@ -12,6 +12,8 @@ module Grammar (
   Variable,
   WithPos(..),
   parseProgram,
+  isImpure,
+  anyImpure,
   typeof,
   )where
 
@@ -70,6 +72,14 @@ data WithPos a = WithPos { posLine   :: Int
                          , posThing  :: a
                          }
 
+isImpure :: Instruction -> Bool
+isImpure (FunctionCall _ _) = False
+isImpure (RawBrainfuck _  ) = True
+isImpure (Loop         b  ) = anyImpure b
+isImpure (While        c b) = anyImpure c || anyImpure b
+
+anyImpure :: [Instruction] -> Bool
+anyImpure = any isImpure
 
 
 -- values
@@ -78,7 +88,7 @@ data Type = BFInt
           | BFChar
           | BFString
           | BFBool
-          deriving (Show, Eq)
+          deriving (Eq)
 
 data Value = VInt Int
            | VChar Char
@@ -88,6 +98,12 @@ data Value = VInt Int
 
 type Variable  = (Type, Name)
 
+
+instance Show Type where
+  show BFInt    = "Int"
+  show BFChar   = "Char"
+  show BFString = "String"
+  show BFBool   = "Bool"
 
 instance Show Value where
   show (VInt    i) = show i
@@ -210,10 +226,11 @@ literalDec = do
   return $ LiteralInt $ read n
 
 
-typename = oneof [pstring, pint, pchar]
+typename = oneof [pstring, pint, pchar, pbool]
   where pstring = BFString <$ char 'S'
         pint    = BFInt    <$ char 'I'
         pchar   = BFChar   <$ char 'C'
+        pbool   = BFChar   <$ char 'B'
 
 name = (:) <$> letter <*> many alphaNum
 
