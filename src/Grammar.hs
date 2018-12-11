@@ -218,7 +218,7 @@ expression = oneof
 
 constantName = ConstantName <$> name
 
-literalString = LiteralString <$> betweenQuotes (many1 $ noneOf "\"")
+literalString = LiteralString <$> betweenQuotes (many $ noneOf "\"")
 
 literalChar = do
   c <- between (char '\'') (char '\'') $ noneOf "'"
@@ -242,7 +242,7 @@ typename = oneof [pstring, pint, pchar, pbool]
         pchar   = BFChar   <$ char 'C'
         pbool   = BFBool   <$ char 'B'
 
-name = (:) <$> letter <*> many alphaNum
+name = (:) <$> oneof [char '_', letter] <*> many (oneof [alphaNum, char '_'])
 
 variable = do
   t <- typename
@@ -273,8 +273,8 @@ betweenParens   = between openParen   closeParen
 betweenCurlies  = between openCurly   closeCurly
 betweenBrackets = between openBracket closeBracket
 
-inline = "INLINE"
-impure = "IMPURE"
+inline = "inline"
+impure = "impure"
 keywords = sort [inline, impure]
 
 brainfuckChars = "+-,.<>[]"

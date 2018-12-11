@@ -43,7 +43,9 @@ moduleName :: Filename -> String
 moduleName = takeBaseName
 
 runCompiler :: CompilerMonad m => FileResolver m -> Filename -> m ObjectMap
-runCompiler fs fn = fmap objects $ flip S.execStateT s $ flip R.runReaderT deps $ compile fn
+runCompiler fs fn = fmap objects $ flip S.execStateT s $ flip R.runReaderT deps $ do
+  compile "Prelude"
+  compile fn
   where deps = Dependencies fs
         s    = CompilerState M.empty M.empty
 

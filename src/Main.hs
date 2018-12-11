@@ -2,20 +2,22 @@ module Main where
 
 
 import           Assembler
+import           BuiltIn
 import           Compiler
 
 
 main :: IO ()
 main = do
-  objs  <- either error return $ runCompiler testResolver "interactive"
+  objs  <- runCompiler testResolver "interactive"
   bfout <- either error return $ assembleVerbosely objs
   putStr bfout
 
 
 
-testResolver :: String -> Either String String
+testResolver :: String -> IO String
 testResolver "interactive" = return testData
 testResolver "other"       = return otherData
+testResolver "Prelude"     = preludeFile
 testResolver _             = error "NIH"
 
 oldTestData :: String
@@ -34,14 +36,13 @@ otherData = "def IMPURE BAR() [C] -> [] {}"
 
 testData :: String
 testData = "// Test\
-           \\n\
            \\nconst I s1 = 3\
            \\nconst C s2 = 0x42\
            \\nconst C s3 = 'x'\
            \\nconst S s4 = \"test\"\
            \\n\
-           \\ndef IMPURE INLINE  true() [] -> [B] { >+ }\n\
-           \\ndef IMPURE INLINE  foo() [] -> [] { ++--++ }\n\
-           \\ndef IMPURE baz(I a, C b, S c) [] -> [] { foo [-] foo() }\
+           \\ndef impure inline true() [] -> [B] { >+ }\n\
+           \\ndef impure inline foo() [] -> [] { ++--++ }\n\
+           \\ndef impure baz(I a, C b, S c) [] -> [] { foo [-] foo() }\
            \\ndef main() { foo baz(s3, 42, \"test\") foo if(true) { foo } }\
            \\n"

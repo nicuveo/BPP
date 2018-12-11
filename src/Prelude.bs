@@ -1,0 +1,181 @@
+// stack
+
+def impure inline clear() [C]   -> [C]   { [-]                 }
+
+def impure inline popc()  [C]   -> []    { clear <             }
+def impure inline popi()  [I]   -> []    { popc popc popc popc }
+
+def        inline dupc()  [C]   -> [C,C] { dupcn(1)            }
+def        inline dupi()  [I]   -> [I,I] { dupin(1)            }
+
+def        inline swapc() [C,C] -> [C,C] { rollc(2,1)          }
+def        inline swapi() [I,I] -> [I,I] { rolli(2,1)          }
+
+
+
+// bool
+
+def impure inline push_true()  []    -> [B] { >+ }
+def impure inline push_false() []    -> [B] { >  }
+
+def impure inline not()        [B]   -> [B] { [>+<[-]]+>[-<->]< }
+
+def impure inline and()        [B,B] -> [B] { mulc c_to_b }
+def impure inline or()         [B,B] -> [B] { addc c_to_b }
+def impure inline xor()        [B,B] -> [B] { nec         }
+
+
+
+// char math
+
+def impure inline addc()    [C,C] -> [C]   { [-<+>]<         }
+def impure inline subc()    [C,C] -> [C]   { <[->-<]>[-<+>]< }
+def impure inline mulc()    [C,C] -> [C]   { <[->>+<<]>[->[->+<]>[-<+<<+>>>]<<]>[-]<< }
+def impure        divc()    [C,C] -> [C]   { > rollc(3,1) dupc(2) gec [-<<<+>[->>+>+<<<]>>>[-<<<+>>>]<[-<->]< dupc(2) gec] < popc popc  }
+def impure        modc()    [C,C] -> [C]   {              dupc(2) gec [-<<   [->>+>+<<<]>>>[-<<<+>>>]<[-<->]< dupc(2) gec]<<[-]>[-<+>]< }
+def impure        divmodc() [C,C] -> [C,C] { > rollc(3,1) dupc(2) gec [-<<<+>[->>+>+<<<]>>>[-<<<+>>>]<[-<->]< dupc(2) gec]<<[-]>[-<+>]< }
+
+def        inline eqc()     [C,C] -> [B]   { ene not     }
+def        inline nec()     [C,C] -> [B]   { subc c_to_b }
+def        inline gtc()     [C,C] -> [B]   { swapc ltc   }
+def        inline lec()     [C,C] -> [B]   { gtc not     }
+def        inline gec()     [C,C] -> [B]   { ltc not     }
+def impure inline ltc()     [C,C] -> [B]   { [<[->>+>+<<<]>>>[-<<<+>>>]< not [-<[-]+<+>>]<<->-]< c_to_b }
+
+def        inline eqc_(C x) [C]   -> [B]   { pushc(x) eqc }
+def        inline nec_(C x) [C]   -> [B]   { pushi(x) nec }
+def        inline gtc_(C x) [C]   -> [B]   { pushi(x) ltc }
+def        inline lec_(C x) [C]   -> [B]   { pushi(x) gec }
+def        inline gec_(C x) [C]   -> [B]   { pushi(x) lec }
+def        inline ltc_(C x) [C]   -> [B]   { pushi(x) gtc }
+
+
+
+// int math
+
+def impure addi() [I,I] -> [I] {
+  <<<<[->>>>>>+<<<<<<]>>>>[->>+ dupc not [-<<+>>] popc <<]>>[-<<<<<<+>>>>>>]<<<
+  <<<<[->>>>>>+<<<<<<]>>>>[->>+ dupc not [-<<+>>] popc <<]>>[-<<<<<<+>>>>>>]<<<
+  <<<<[->>>>>>+<<<<<<]>>>>[->>+ dupc not [-<<+>>] popc <<]>>[-<<<<<<+>>>>>>]<<<
+  <<<<[->>>>>>+<<<<<<]>>>>[->>+                        <<]>>[-<<<<<<+>>>>>>]<<<
+}
+
+def impure subi() [I,I] -> [I] {
+  [->>+<<]<<<<[->>>>>> dupc not [-<<<<<<<<+>>>>>>>>] popc -<<<<<<]>>>>>>[-<<<<<<+>>>>>>]<<<
+  [->>+<<]<<<<[->>>>>> dupc not [-<<<<<<<<+>>>>>>>>] popc -<<<<<<]>>>>>>[-<<<<<<+>>>>>>]<<<
+  [->>+<<]<<<<[->>>>>> dupc not [-<<<<<<<<+>>>>>>>>] popc -<<<<<<]>>>>>>[-<<<<<<+>>>>>>]<<<
+  [->>+<<]<<<<[->>>>>>                                    -<<<<<<]>>>>>>[-<<<<<<+>>>>>>]<<<
+}
+
+def impure muli() [I,I] -> [I] {
+  >>>>
+  rollc(12,7) dupc pushc(127) ltc
+  [->>>>+<<<<< dec(128) >] pop
+  rollc(12,4) dupc pushc(127) ltc
+  [->>>>+<<<<< dec(128) >] pop
+  rollc(12,5)
+  >>>>>- not [-<<<<< <<<<<<<<<<< set(128) >>>>>>>>>>> >>>>>] <<<<<
+  dupi i_to_b [
+  clear >>>+ swapi subi
+  rollc(12,4) dupi rollc(12,4) addi swapi rollc(12,8)
+  dupi i_to_b ] popc
+  popi popi
+}
+
+
+def inline eqi() [I,I] -> [B] { nei not     }
+def inline nei() [I,I] -> [B] { subi i_to_b }
+
+
+
+// cast
+
+def impure inline b_to_c() [B] -> [C] {                   }
+def impure inline b_to_i() [B] -> [I] { c_to_i            }
+def impure inline c_to_b() [C] -> [B] { [>+<[-]] >[-<+>]< }
+def impure inline c_to_i() [C] -> [I] { >>> rollc(4,3)    }
+
+def impure inline i_to_b() [I] -> [B] { [   >+<   [-]]>   [   -<+>   ]<<
+                                        [  >>+<<  [-]]>>  [  -<<+>>  ]<<<
+                                        [ >>>+<<< [-]]>>> [ -<<<+>>> ]<<<<
+                                        [>>>>+<<<<[-]]>>>>[-<<<<+>>>>]<
+                                        addc addc addc c_to_i              }
+def impure inline i_to_c() [C] -> [I] { rollc(4,1) popc popc popc }
+
+
+
+// printing
+
+def        inline endl()                  { puts_ln("") }
+
+def impure inline printc_chr() [C] -> [C] { . }
+def               printc_ord() [C] -> [C] {
+  dupc
+  dupc pushc(100) swapc divc
+  if (dup c_to_b) { _print_digit }
+  pushc(100) swapc modc
+  dupc pushc( 10) swapc divc
+  if (dup c_to_b) { _print_digit }
+  pushc( 10) swapc modc
+  _print_digit
+}
+
+def printi() [I] -> [I] {
+  dupi roll(4,3) dupc roll(5,1)
+  pushc(127) ltc inc(1)
+  if (eqc_(2)) {
+    prints("-") clear
+    <<<< dec(128) >>>>
+           >>>++>+>++++>+++++++>   ++++>++++++++>    +++>++++++> ++++>++++++++             <<<<<<<<<<<< 
+    <[-   >>>>  > >    >       >       >        >       >      >     >       - _cleann    <<<<<<<<<<<<<]
+    <[-  >>>>>  > >    >       >       >        >       >    -->----->  ------ _cleann   <<<<<<<<<<<<<<]
+    <[- >>>>>>  > >    >       >       >  ------>  -----> ----->  --->  ------ _cleann  <<<<<<<<<<<<<<<]
+    <[->>>>>>>  > >   -> ------>-------> ------->------->    -->    ->  ------ _cleann <<<<<<<<<<<<<<<<]
+    >>>
+  }
+  if (eqc_(1)) {
+    clear
+    <[-   >>>>>> >      >       >       >       >     >     >     + _cleanp    <<<<<<<<<<<<<]
+    <[-  >>>>>>> >      >       >       >       >   ++>+++++>++++++ _cleanp   <<<<<<<<<<<<<<]
+    <[- >>>>>>>> >      >       > ++++++>  +++++>+++++>  +++>++++++ _cleanp  <<<<<<<<<<<<<<<]
+    <[->>>>>>>>>+>++++++>+++++++>+++++++>+++++++>   ++>    +>++++++ _cleanp <<<<<<<<<<<<<<<<]
+    >>>>>
+  }
+  >>
+  >[_out_digit] >[_out_digit] >[_out_digit] >[_out_digit] >[_out_digit]
+  >[_out_digit] >[_out_digit] >[_out_digit] >[_out_digit] > _out_digit
+  <<<<<<<<<<<<<<<<<
+}
+
+
+
+// internal
+
+def inline _print_digit() [C] -> [C] { dupc inc('0') printc_chr popc }
+def inline _out_digit() [C] -> [C] { inc('0') printc_chr clear }
+
+def impure inline _cleanp() {
+  dup gtc_(9) [-<----------<+>>] < roll(10,1)
+  dup gtc_(9) [-<----------<+>>] < roll(10,1)
+  dup gtc_(9) [-<----------<+>>] < roll(10,1)
+  dup gtc_(9) [-<----------<+>>] < roll(10,1)
+  dup gtc_(9) [-<----------<+>>] < roll(10,1)
+  dup gtc_(9) [-<----------<+>>] < roll(10,1)
+  dup gtc_(9) [-<----------<+>>] < roll(10,1)
+  dup gtc_(9) [-<----------<+>>] < roll(10,1)
+  dup gtc_(9) [-<----------<+>>] < roll(10,1)
+  dup gtc_(9) [-<----------<+>>] < roll(10,1)
+}
+
+def impure inline _cleann() {
+  dup gtc_(200) [-<++++++++++<->>] < roll(10,1)
+  dup gtc_(200) [-<++++++++++<->>] < roll(10,1)
+  dup gtc_(200) [-<++++++++++<->>] < roll(10,1)
+  dup gtc_(200) [-<++++++++++<->>] < roll(10,1)
+  dup gtc_(200) [-<++++++++++<->>] < roll(10,1)
+  dup gtc_(200) [-<++++++++++<->>] < roll(10,1)
+  dup gtc_(200) [-<++++++++++<->>] < roll(10,1)
+  dup gtc_(200) [-<++++++++++<->>] < roll(10,1)
+  dup gtc_(200) [-<++++++++++<->>] < roll(10,1)
+  dup gtc_(200) [-<++++++++++<->>] < roll(10,1)
+}
