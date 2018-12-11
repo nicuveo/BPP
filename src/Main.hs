@@ -8,7 +8,7 @@ import           Compiler
 main :: IO ()
 main = do
   objs  <- either error return $ runCompiler testResolver "interactive"
-  bfout <- either error return $ assemble verboseFormatter objs
+  bfout <- either error return $ assembleVerbosely objs
   putStr bfout
 
 
