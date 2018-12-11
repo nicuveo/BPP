@@ -230,7 +230,7 @@ typename = oneof [pstring, pint, pchar, pbool]
   where pstring = BFString <$ char 'S'
         pint    = BFInt    <$ char 'I'
         pchar   = BFChar   <$ char 'C'
-        pbool   = BFChar   <$ char 'B'
+        pbool   = BFBool   <$ char 'B'
 
 name = (:) <$> letter <*> many alphaNum
 
