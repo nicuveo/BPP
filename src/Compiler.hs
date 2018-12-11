@@ -14,6 +14,7 @@ import qualified Control.Monad.State  as S
 import           Data.Char
 import           Data.List            as L
 import qualified Data.Map             as M
+import           System.FilePath
 
 import           Grammar
 import           Object
@@ -39,7 +40,7 @@ type CompilerMonad m = (Monad m, MonadBase m m)
 
 
 moduleName :: Filename -> String
-moduleName = id
+moduleName = takeBaseName
 
 runCompiler :: CompilerMonad m => FileResolver m -> Filename -> m ObjectMap
 runCompiler fs fn = fmap objects $ flip S.execStateT s $ flip R.runReaderT deps $ compile fn
@@ -119,16 +120,16 @@ checkFunction objs f = do
   unless (null dupNames) $ fail "duplicate argument name"
   forM_ (funcArgs f) $ \(_, argName) ->
     when (argName `M.member` objs) $ fail "warning arg shadows other binding"
-  result <- checkInstructions objs f (reverse $ funcInput f) $ funcBody f
+  result <- checkInstructions objs f (funcPure f) (reverse $ funcInput f) $ funcBody f
   when (isPure && result /= reverse (funcOutput f)) $ fail "type error: wrong declared function type"
   where isPure = funcPure f
 
-checkInstructions :: Monad m => ObjectMap -> Function -> [Type]  -> [Instruction] -> m [Type]
-checkInstructions = foldM ... checkInstruction
+checkInstructions :: Monad m => ObjectMap -> Function -> Bool -> [Type] -> [Instruction] -> m [Type]
+checkInstructions objs f typeCheck = foldM $ checkInstruction objs f typeCheck
 
-checkInstruction :: Monad m => ObjectMap -> Function -> [Type] -> Instruction -> m [Type]
-checkInstruction    _ _ stack (RawBrainfuck _) = return stack
-checkInstruction objs f stack (FunctionCall n v) = do
+checkInstruction :: Monad m => ObjectMap -> Function -> Bool -> [Type] -> Instruction -> m [Type]
+checkInstruction _    _ _         stack (RawBrainfuck _) = return stack
+checkInstruction objs f typeCheck stack (FunctionCall n v) = do
   g <- getFunction objs n
   when (length (funcArgs g) /= length v) $ fail "wrong number of arguments"
   forM_ (zip (funcArgs g) v) $ \((kind, _), expr) -> do
@@ -136,7 +137,7 @@ checkInstruction objs f stack (FunctionCall n v) = do
       ConstantName cn -> parameterType kind cn
       _               -> typeof <$> eval objs kind expr
     when (thisKind /= kind) $ fail "wrong type arg"
-  if funcPure f
+  if typeCheck
     then case stripPrefix (reverse $ funcInput f) stack of
            Nothing -> fail "function call stack type error"
            Just ns -> return $ reverse (funcOutput f) ++ ns
@@ -148,22 +149,30 @@ checkInstruction objs f stack (FunctionCall n v) = do
               Just (FunctionObject _) -> fail "error functions aren't first class yet"
               Just (ValueObject   vo) -> return $ if typeof vo `canCastTo` k then k else typeof vo
               Nothing                 -> fail "name error"
-checkInstruction objs f stack (Loop lb) = do
-  newStack <- checkInstructions objs f stack lb
-  when (funcPure f && newStack /= stack) $ fail "error loop not stack neutral"
+checkInstruction objs f typeCheck stack (Loop lb) = do
+  newStack <- checkInstructions objs f typeCheck stack lb
+  when (typeCheck && newStack /= stack) $ fail "error loop not stack neutral"
   return newStack
-checkInstruction objs f stack (While wc wb) = do
-  (cStackIn, cStackOut) <- foldM guessStack ([], []) wc
-  when (cStackOut /= BFBool : cStackIn) $ fail "wrong type in while condition"
-  newStack <- checkInstructions objs f stack wb
-  when (funcPure f && newStack /= stack) $ fail "error while not stack neutral"
+checkInstruction objs f typeCheck stack (If ic ib) = do
+  (cStackIn, cStackOut) <- foldM (guessStack objs) ([], []) ic
+  when (cStackOut /= BFBool : cStackIn) $ fail $ "wrong type in if condition, got " ++ show (reverse cStackIn) ++ " -> " ++ show (reverse cStackOut)
+  newStack <- checkInstructions objs f typeCheck stack ib
+  when (typeCheck && newStack /= stack) $ fail "error while not stack neutral"
   return newStack
-  where guessStack (initStack, currentStack) i@(FunctionCall n _) = do
-          g <- getFunction objs n
-          let newInitStack = initStack ++ drop (length currentStack) (reverse $ funcInput g)
-          newCurrentStack <- checkInstruction objs f newInitStack i
-          return (newInitStack, newCurrentStack)
-        guessStack _ _ = fail "while condition must be pure function calls"
+checkInstruction objs f typeCheck stack (While wc wb) = do
+  (cStackIn, cStackOut) <- foldM (guessStack objs) ([], []) wc
+  when (cStackOut /= BFBool : cStackIn) $ fail $ "wrong type in while condition, got " ++ show (reverse cStackIn) ++ " -> " ++ show (reverse cStackOut)
+  newStack <- checkInstructions objs f typeCheck stack wb
+  when (typeCheck && newStack /= stack) $ fail "error while not stack neutral"
+  return newStack
+
+guessStack :: Monad m => ObjectMap -> ([Type], [Type]) -> Instruction -> m ([Type], [Type])
+guessStack objs (initStack, currentStack) i@(FunctionCall n _) = do
+  g <- getFunction objs n
+  let newInitStack = initStack ++ drop (length currentStack) (reverse $ funcInput g)
+  newCurrentStack <- checkInstruction objs g True newInitStack i
+  return (newInitStack, newCurrentStack)
+guessStack _ _ _ = fail "while or if condition must only be pure function calls"
 
 getFunction :: Monad m => ObjectMap -> Name -> m Function
 getFunction objs n =

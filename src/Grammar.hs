@@ -42,6 +42,7 @@ data Statement = Include      Filename
 
 data Instruction = FunctionCall Name [Expression]
                  | RawBrainfuck Raw
+                 | If           [Instruction] [Instruction]
                  | Loop         [Instruction]
                  | While        [Instruction] [Instruction]
                  deriving (Show)
@@ -72,14 +73,18 @@ data WithPos a = WithPos { posLine   :: Int
                          , posThing  :: a
                          }
 
+
 isImpure :: Instruction -> Bool
 isImpure (FunctionCall _ _) = False
 isImpure (RawBrainfuck _  ) = True
 isImpure (Loop         b  ) = anyImpure b
+isImpure (If           c b) = anyImpure c || anyImpure b
 isImpure (While        c b) = anyImpure c || anyImpure b
 
 anyImpure :: [Instruction] -> Bool
 anyImpure = any isImpure
+
+
 
 
 -- values
@@ -147,44 +152,49 @@ comment = do
 constant = do
   symbol "const"
   (t, n) <- variable
-  spaces
   symbol "="
-  spaces
   e <- expression
   return $ ConstantDecl $ Constant t n e
 
 function = do
   symbol "def"
-  k <- oneof (symbol <$> keywords) `sepEndBy` spaces
+  k <- oneof (string <$> keywords) `sepEndBy` many1 space
   let p = impure `notElem` k
       l = inline `elem` k
   n <- name
-  a <- betweenParens   $ variable `sepBy` symbol ","
+  a <- betweenParens $ variable `sepBy` symbol ","
   (i, o) <- option ([], []) $ do
     i <- betweenBrackets $ typename `sepBy` symbol ","
     symbol "->"
     o <- betweenBrackets $ typename `sepBy` symbol ","
     return (i, o)
-  b <- betweenCurlies  $ instruction `sepEndBy` spaces
+  b <- betweenCurlies $ instruction `sepEndBy` spaces
   return $ FunctionDecl $ Function n p l a i o b
 
 
 instruction = oneof
-  [ functionCall
-  , rawBrainfuck
+  [ rawBrainfuck
+  , ifb
   , loop
   , while
-  ] -- <* try comment
+  , functionCall
+  ]
 
 functionCall = do
   n <- name
-  a <- option [] $ betweenParens $ expression `sepBy` symbol ","
+  a <- option [] $ try $ betweenParens $ expression `sepBy` symbol ","
   return $ FunctionCall n a
 
 rawBrainfuck = do
   let valid = oneof $ char <$> brainfuckChars
   s <- many1 valid `sepEndBy1` spaces
   return $ RawBrainfuck $ concat s
+
+ifb = do
+  symbol "if"
+  c <- betweenParens  $ instruction `sepEndBy` spaces
+  b <- betweenCurlies $ instruction `sepEndBy` spaces
+  return $ If c b
 
 loop = do
   symbol "loop"
@@ -245,7 +255,7 @@ variable = do
 -- helpers
 
 symbol :: String -> Parser String
-symbol s = string s <* spaces
+symbol s = spaces *> string s <* spaces
 
 
 oneof = foldl1 (<|>) . map try

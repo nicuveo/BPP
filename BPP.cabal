@@ -12,6 +12,8 @@ build-type:          Simple
 
 cabal-version:       >=1.10
 
+data-files:          src/Prelude.bs
+
 executable bpp
   main-is:           Main.hs
   hs-source-dirs:    src
@@ -20,10 +22,11 @@ executable bpp
                      -fno-warn-type-defaults
                      -fno-warn-unused-do-bind
                      -fwarn-tabs
-  other-modules:     Types, Grammar, Object, Compiler, Assembler
+  other-modules:     Types, Grammar, Object, Compiler, Assembler, BuiltIn
   build-depends:     base,
                      containers,
                      mtl,
                      transformers-base,
                      parsec,
-                     split
+                     split,
+                     filepath

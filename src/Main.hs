@@ -40,7 +40,8 @@ testData = "// Test\
            \\nconst C s3 = 'x'\
            \\nconst S s4 = \"test\"\
            \\n\
+           \\ndef IMPURE INLINE  true() [] -> [B] { >+ }\n\
            \\ndef IMPURE INLINE  foo() [] -> [] { ++--++ }\n\
            \\ndef IMPURE baz(I a, C b, S c) [] -> [] { foo [-] foo() }\
-           \\ndef main() { foo baz(s3, 42, \"test\") foo }\
+           \\ndef main() { foo baz(s3, 42, \"test\") foo if(true) { foo } }\
            \\n"
