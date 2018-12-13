@@ -162,9 +162,9 @@ checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (FunctionCall n v)) =
             Left err -> report wp err
             Right k  -> when (k /= kind) $ report wp $ FunctionCallWrongArgumentTypeError g arg k
         if typeCheck
-        then case stripPrefix (reverse $ funcInput f) stack of
-               Nothing -> report wp (FunctionCallStackTypeError g $ reverse stack) >> return (reverse (funcOutput f) ++ stack)
-               Just ns -> return $ reverse (funcOutput f) ++ ns
+        then case stripPrefix (reverse $ funcInput g) stack of
+               Nothing -> report wp (FunctionCallStackTypeError g $ reverse stack) >> return (reverse (funcOutput g) ++ stack)
+               Just ns -> return $ reverse (funcOutput g) ++ ns
         else return stack
   where parameterType k name =
           case find (\(_, arg) -> arg == name) $ funcArgs f of
