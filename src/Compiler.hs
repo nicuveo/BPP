@@ -41,7 +41,7 @@ data CompilerState =
                 , objects     :: ObjectMap
                 }
 
-type CompilerT     m = E.ExceptT Diagnostics (A.RWST (Dependencies m) Diagnostics CompilerState m)
+type CompilerT     m = E.ExceptT () (A.RWST (Dependencies m) Diagnostics CompilerState m)
 type CompilerMonad m = (Monad m, MonadBase m m)
 
 
@@ -52,8 +52,8 @@ runCompiler :: (Monad m, MonadBase m m) => FileResolver m -> Filename -> m (Diag
 runCompiler fs fn = do
   (result, s, d) <- A.runRWST (E.runExceptT expr) deps st
   case result of
-    Right () -> return (d, Just $ objects s)
-    Left   _ -> return (d, Nothing)
+    Right _ -> return (d, Just $ objects s)
+    Left  _ -> return (d, Nothing)
   where deps = Dependencies fs
         st   = CompilerState M.empty builtinFunctions
         expr = compile "Prelude" >> compile fn
@@ -68,7 +68,7 @@ compile filename = do
         program = parseProgram mName content
     sequence_ $ step <$> program
     S.modify $ addModule mName $ objects state
-  when (any isError diagnostics) $ E.throwError diagnostics
+  when (any isError diagnostics) $ E.throwError ()
 
 step :: CompilerMonad m => WithPos Statement -> CompilerT m ()
 step (WithPos _ _ _ (Comment _)) = return ()
@@ -171,7 +171,7 @@ checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (FunctionCall n v)) =
         else return stack
   where parameterType k name =
           case find (\(_, arg) -> arg == name) $ funcArgs f of
-            Just (kind, _) -> Right kind
+            Just (kind, _) -> Right $ if kind `canCastTo` k then k else kind
             Nothing        -> case objs M.!? name of
               Just (WithPos _ _ _ (ValueObject   vo)) -> Right $ if typeof vo `canCastTo` k then k else typeof vo
               Just other                              -> Left  $ ExpectedValueGotFunctionError name other
@@ -224,4 +224,4 @@ report :: CompilerMonad m => WithPos a -> Error -> CompilerT m ()
 report wp e = W.tell [e <$ wp]
 
 reportAndStop :: CompilerMonad m => WithPos a -> Error -> CompilerT m b
-reportAndStop = (>> E.throwError []) ... report
+reportAndStop = (>> E.throwError ()) ... report
