@@ -48,6 +48,7 @@ comment = do
 constant = do
   symbol "const"
   (t, n) <- variable
+  spaces
   symbol "="
   e <- expression
   return $ ConstantDecl $ Constant t n e
@@ -60,8 +61,10 @@ function = do
   n <- name
   a <- betweenParens $ variable `sepBy` symbol ","
   (i, o) <- option ([], []) $ do
+    many space
     i <- betweenBrackets $ typename `sepBy` symbol ","
     symbol "->"
+    many space
     o <- betweenBrackets $ typename `sepBy` symbol ","
     return (i, o)
   b <- betweenCurlies $ instruction `sepEndBy` spaces
