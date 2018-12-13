@@ -43,11 +43,11 @@ def        inline gec()     [C,C] -> [B]   { ltc not     }
 def impure inline ltc()     [C,C] -> [B]   { [<[->>+>+<<<]>>>[-<<<+>>>]< not [-<[-]+<+>>]<<->-]< c_to_b }
 
 def        inline eqc_(C x) [C]   -> [B]   { pushc(x) eqc }
-def        inline nec_(C x) [C]   -> [B]   { pushi(x) nec }
-def        inline gtc_(C x) [C]   -> [B]   { pushi(x) ltc }
-def        inline lec_(C x) [C]   -> [B]   { pushi(x) gec }
-def        inline gec_(C x) [C]   -> [B]   { pushi(x) lec }
-def        inline ltc_(C x) [C]   -> [B]   { pushi(x) gtc }
+def        inline nec_(C x) [C]   -> [B]   { pushc(x) nec }
+def        inline gtc_(C x) [C]   -> [B]   { pushc(x) ltc }
+def        inline lec_(C x) [C]   -> [B]   { pushc(x) gec }
+def        inline gec_(C x) [C]   -> [B]   { pushc(x) lec }
+def        inline ltc_(C x) [C]   -> [B]   { pushc(x) gtc }
 
 
 
@@ -120,7 +120,7 @@ def               printc_ord() [C] -> [C] {
   _print_digit
 }
 
-def printi() [I] -> [I] {
+def impure printi() [I] -> [I] {
   dupi roll(4,3) dupc roll(5,1)
   pushc(127) ltc inc(1)
   if (eqc_(2)) {

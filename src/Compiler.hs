@@ -19,6 +19,7 @@ import           Data.List            as L
 import qualified Data.Map             as M
 import           System.FilePath
 
+import           BuiltIn
 import           Diagnostics
 import           Grammar
 import           Object
@@ -54,7 +55,7 @@ runCompiler fs fn = do
     Right (s, d) -> return (d, Just $ objects s)
     Left      d  -> return (d, Nothing)
   where deps = Dependencies fs
-        st   = CompilerState M.empty M.empty
+        st   = CompilerState M.empty builtinFunctions
         expr = compile "Prelude" >> compile fn
 
 compile :: CompilerMonad m => Filename -> CompilerT m ()
