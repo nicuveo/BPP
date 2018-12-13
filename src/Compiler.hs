@@ -41,7 +41,7 @@ data CompilerState =
                 , objects     :: ObjectMap
                 }
 
-type CompilerT     m = A.RWST (Dependencies m) Diagnostics CompilerState (E.ExceptT Diagnostics m)
+type CompilerT     m = E.ExceptT Diagnostics (A.RWST (Dependencies m) Diagnostics CompilerState m)
 type CompilerMonad m = (Monad m, MonadBase m m)
 
 
@@ -50,10 +50,10 @@ moduleName = takeBaseName
 
 runCompiler :: (Monad m, MonadBase m m) => FileResolver m -> Filename -> m (Diagnostics, Maybe ObjectMap)
 runCompiler fs fn = do
-  result <- E.runExceptT $ A.execRWST expr deps st
+  (result, s, d) <- A.runRWST (E.runExceptT expr) deps st
   case result of
-    Right (s, d) -> return (d, Just $ objects s)
-    Left      d  -> return (d, Nothing)
+    Right () -> return (d, Just $ objects s)
+    Left   _ -> return (d, Nothing)
   where deps = Dependencies fs
         st   = CompilerState M.empty builtinFunctions
         expr = compile "Prelude" >> compile fn
@@ -89,9 +89,11 @@ step wp@(WithPos _ _ _ (FunctionDecl f)) = do
   let fName = funcName f
   if fName `M.member` objs
   then report wp $ FunctionAlreadyDefinedError fName $ objs M.! fName
-  else do
-    checkFunction objs $ f <$ wp
-    S.modify $ addObject fName $ FunctionObject f <$ wp
+  else E.catchError (doTheThing fName objs) $ const $ return ()
+  where doTheThing fName objs = do
+          checkFunction objs $ f <$ wp
+          S.modify $ addObject fName $ FunctionObject f <$ wp
+
 
 
 eval :: ObjectMap -> Type -> Expression -> Either Error Value
@@ -150,7 +152,7 @@ checkInstruction :: CompilerMonad m => ObjectMap -> Function -> Bool -> [Type] -
 checkInstruction _    _ _         stack (WithPos _ _ _ (RawBrainfuck _)) = return stack
 checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (FunctionCall n v)) =
   case getFunction objs n of
-    Left err -> report wp err >> return stack
+    Left err -> reportAndStop wp err
     Right  g ->
       if length (funcArgs g) /= length v
       then report wp (FunctionCallWrongArgumentsNumberError g $ length v) >> return stack
@@ -164,7 +166,7 @@ checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (FunctionCall n v)) =
             Right k  -> when (k /= kind) $ report wp $ FunctionCallWrongArgumentTypeError g arg k
         if typeCheck
         then case stripPrefix (reverse $ funcInput g) stack of
-               Nothing -> report wp (FunctionCallStackTypeError g $ reverse stack) >> return (reverse (funcOutput g) ++ stack)
+               Nothing -> reportAndStop wp $ FunctionCallStackTypeError g $ reverse stack
                Just ns -> return $ reverse (funcOutput g) ++ ns
         else return stack
   where parameterType k name =
@@ -176,19 +178,19 @@ checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (FunctionCall n v)) =
               Nothing                                 -> Left  $ ConstantNotFoundError name
 checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (Loop lb)) = do
   newStack <- checkInstructions objs f typeCheck stack lb
-  when (typeCheck && newStack /= stack) $ report wp $ BlockLoopNotStackNeutralError (stack, newStack)
+  when (typeCheck && newStack /= stack) $ reportAndStop wp $ BlockLoopNotStackNeutralError (stack, newStack)
   return newStack
 checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (If ic ib)) = do
   cs@(cStackIn, cStackOut) <- foldM (guessStack objs) ([], []) ic
   when (cStackOut /= BFBool : cStackIn) $ report wp $ ConditionWrongTypeError cs
   newStack <- checkInstructions objs f typeCheck stack ib
-  when (typeCheck && newStack /= stack) $ report wp $ BlockIfNotStackNeutralError (stack, newStack)
+  when (typeCheck && newStack /= stack) $ reportAndStop wp $ BlockIfNotStackNeutralError (stack, newStack)
   return newStack
 checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (While wc wb)) = do
   cs@(cStackIn, cStackOut) <- foldM (guessStack objs) ([], []) wc
   when (cStackOut /= BFBool : cStackIn) $ report wp $ ConditionWrongTypeError cs
   newStack <- checkInstructions objs f typeCheck stack wb
-  when (typeCheck && newStack /= stack) $ report wp $ BlockWhileNotStackNeutralError (stack, newStack)
+  when (typeCheck && newStack /= stack) $ reportAndStop wp $ BlockWhileNotStackNeutralError (stack, newStack)
   return newStack
 
 guessStack :: CompilerMonad m => ObjectMap -> ([Type], [Type]) -> WithPos Instruction -> CompilerT m ([Type], [Type])
@@ -220,3 +222,6 @@ addObject name object state = state { objects = M.insert name object $ objects s
 
 report :: CompilerMonad m => WithPos a -> Error -> CompilerT m ()
 report wp e = W.tell [e <$ wp]
+
+reportAndStop :: CompilerMonad m => WithPos a -> Error -> CompilerT m b
+reportAndStop = (>> E.throwError []) ... report
