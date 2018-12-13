@@ -1,30 +1,11 @@
-{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
-
-module Grammar (
-  Program,
-  Statement(..),
-  Instruction(..),
-  Expression(..),
-  Constant(..),
-  Function(..),
-  Type(..),
-  Value(..),
-  Variable,
-  WithPos(..),
-  parseProgram,
-  isImpure,
-  anyImpure,
-  typeof,
-  )where
+module Grammar where
 
 
 
 -- imports
 
 import           Data.List
-import           Numeric
-import           Text.Parsec
-import           Text.Parsec.String
+import           Text.Printf
 
 import           Types
 
@@ -32,7 +13,7 @@ import           Types
 
 -- grammar
 
-type Program = [Statement]
+type Program = [WithPos Statement]
 
 data Statement = Include      Filename
                | Comment      Raw
@@ -42,9 +23,9 @@ data Statement = Include      Filename
 
 data Instruction = FunctionCall Name [Expression]
                  | RawBrainfuck Raw
-                 | If           [Instruction] [Instruction]
-                 | Loop         [Instruction]
-                 | While        [Instruction] [Instruction]
+                 | If           [WithPos Instruction] [WithPos Instruction]
+                 | Loop         [WithPos Instruction]
+                 | While        [WithPos Instruction] [WithPos Instruction]
                  deriving (Show)
 
 data Expression = ConstantName  Name
@@ -65,25 +46,28 @@ data Function = Function { funcName   :: Name
                          , funcArgs   :: [Variable]
                          , funcInput  :: [Type]
                          , funcOutput :: [Type]
-                         , funcBody   :: [Instruction]
-                         } deriving (Show)
-
-data WithPos a = WithPos { posLine   :: Int
-                         , posColumn :: Int
-                         , posThing  :: a
+                         , funcBody   :: [(String, Value)] -> [WithPos Instruction]
                          }
+
+
+instance Show Function where
+  show f = printf "{%sfunction %s(%s) %s -> %s}" q n a i o
+    where q = unwords $ ["impure" | not $ funcPure f] ++ ["inline" | funcInline f] ++ [""]
+          n = funcName f
+          a = intercalate ", " $ show <$> funcArgs f
+          i = show $ funcInput f
+          o = show $ funcOutput f
 
 
 isImpure :: Instruction -> Bool
 isImpure (FunctionCall _ _) = False
 isImpure (RawBrainfuck _  ) = True
-isImpure (Loop         b  ) = anyImpure b
-isImpure (If           c b) = anyImpure c || anyImpure b
-isImpure (While        c b) = anyImpure c || anyImpure b
+isImpure (Loop         b  ) = anyImpure (posThing <$> b)
+isImpure (If           c b) = anyImpure (posThing <$> c) || anyImpure (posThing <$> b)
+isImpure (While        c b) = anyImpure (posThing <$> c) || anyImpure (posThing <$> b)
 
 anyImpure :: [Instruction] -> Bool
 anyImpure = any isImpure
-
 
 
 
@@ -121,160 +105,3 @@ typeof (VInt    _) = BFInt
 typeof (VChar   _) = BFChar
 typeof (VString _) = BFString
 typeof (VBool   _) = BFBool
-
-
-
--- parsing
-
-parseProgram :: Filename -> String -> Program
-parseProgram = either (error . show) id ... parse program
-
-
-program = statement `sepEndBy` many newline <* eof
-
-statement = oneof
-  [ include
-  , comment
-  , constant
-  , function
-  ]
-
-include = do
-  symbol "include"
-  filename <- betweenQuotes $ many1 $ noneOf "\"\n\t"
-  return $ Include filename
-
-comment = do
-  symbol "//"
-  text <- many $ noneOf "\n"
-  return $ Comment text
-
-constant = do
-  symbol "const"
-  (t, n) <- variable
-  symbol "="
-  e <- expression
-  return $ ConstantDecl $ Constant t n e
-
-function = do
-  symbol "def"
-  k <- oneof (string <$> keywords) `sepEndBy` many1 space
-  let p = impure `notElem` k
-      l = inline `elem` k
-  n <- name
-  a <- betweenParens $ variable `sepBy` symbol ","
-  (i, o) <- option ([], []) $ do
-    i <- betweenBrackets $ typename `sepBy` symbol ","
-    symbol "->"
-    o <- betweenBrackets $ typename `sepBy` symbol ","
-    return (i, o)
-  b <- betweenCurlies $ instruction `sepEndBy` spaces
-  return $ FunctionDecl $ Function n p l a i o b
-
-
-instruction = oneof
-  [ rawBrainfuck
-  , ifb
-  , loop
-  , while
-  , functionCall
-  ]
-
-functionCall = do
-  n <- name
-  a <- option [] $ try $ betweenParens $ expression `sepBy` symbol ","
-  return $ FunctionCall n a
-
-rawBrainfuck = do
-  let valid = oneof $ char <$> brainfuckChars
-  s <- many1 valid `sepEndBy1` spaces
-  return $ RawBrainfuck $ concat s
-
-ifb = do
-  symbol "if"
-  c <- betweenParens  $ instruction `sepEndBy` spaces
-  b <- betweenCurlies $ instruction `sepEndBy` spaces
-  return $ If c b
-
-loop = do
-  symbol "loop"
-  b <- betweenCurlies $ instruction `sepEndBy` spaces
-  return $ Loop b
-
-while = do
-  symbol "while"
-  c <- betweenParens  $ instruction `sepEndBy` spaces
-  b <- betweenCurlies $ instruction `sepEndBy` spaces
-  return $ While c b
-
-
-expression = oneof
-  [ constantName
-  , literalString
-  , literalChar
-  , literalHex
-  , literalDec
-  ]
-
-constantName = ConstantName <$> name
-
-literalString = LiteralString <$> betweenQuotes (many $ noneOf "\"")
-
-literalChar = do
-  c <- between (char '\'') (char '\'') $ noneOf "'"
-  return $ LiteralChar c
-
-literalHex = do
-  string "0x"
-  n <- many1 hexDigit
-  -- FIXME: handle no parse
-  return $ LiteralInt $ fst $ head $ readHex n
-
-literalDec = do
-  n <- many1 digit
-  -- FIXME: handle no parse
-  return $ LiteralInt $ read n
-
-
-typename = oneof [pstring, pint, pchar, pbool]
-  where pstring = BFString <$ char 'S'
-        pint    = BFInt    <$ char 'I'
-        pchar   = BFChar   <$ char 'C'
-        pbool   = BFBool   <$ char 'B'
-
-name = (:) <$> oneof [char '_', letter] <*> many (oneof [alphaNum, char '_'])
-
-variable = do
-  t <- typename
-  spaces
-  n <- name
-  return (t, n)
-
-
-
--- helpers
-
-symbol :: String -> Parser String
-symbol s = spaces *> string s <* spaces
-
-
-oneof = foldl1 (<|>) . map try
-
-quote        = char '"'
-openParen    = symbol "("
-openCurly    = symbol "{"
-openBracket  = symbol "["
-closeParen   = symbol ")"
-closeCurly   = symbol "}"
-closeBracket = symbol "]"
-
-betweenQuotes   = between quote       quote
-betweenParens   = between openParen   closeParen
-betweenCurlies  = between openCurly   closeCurly
-betweenBrackets = between openBracket closeBracket
-
-inline = "inline"
-impure = "impure"
-keywords = sort [inline, impure]
-
-brainfuckChars = "+-,.<>[]"

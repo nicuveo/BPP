@@ -8,9 +8,13 @@ import           Compiler
 
 main :: IO ()
 main = do
-  objs  <- runCompiler testResolver "interactive"
-  bfout <- either error return $ assembleVerbosely objs
-  putStr bfout
+  (diags, mObjs) <- runCompiler testResolver "interactive"
+  mapM_ print diags
+  case mObjs of
+    Nothing -> putStrLn "Aborting."
+    Just o  -> do
+      bfout <- either error return $ assembleVerbosely o
+      putStr bfout
 
 
 

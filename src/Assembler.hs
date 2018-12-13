@@ -1,5 +1,4 @@
 {-# LANGUAGE ParallelListComp #-}
-{-# LANGUAGE TupleSections    #-}
 
 module Assembler where
 
@@ -24,32 +23,33 @@ assembleVerbosely objs = unlines <$> expandFunc 0 mainFunc []
         expandFunc :: Monad m => Int -> Function -> [(String, Value)] -> m [String]
         expandFunc level func args = do
           when (level > 99) $ fail "stack too deep"
-          i <- postProd <$> mapM expandInst (funcBody func)
+          i <- postProd <$> mapM expandInst (funcBody func args)
           let header = printf "%s%s" (funcName func) $
                 if null args then "" else "(" ++ render args ++ ")"
           return $ if funcInline func
                    then i
                    else header : i
-          where expandInst (RawBrainfuck r) = return r
-                expandInst (FunctionCall g v) = do
+          where expandInst :: Monad m => WithPos Instruction -> m String
+                expandInst (WithPos _ _ _ (RawBrainfuck r)) = return r
+                expandInst (WithPos _ _ _ (FunctionCall g v)) = do
                   let callee = extractFun objs g
-                      scope  = M.union (M.fromList $ fmap ValueObject <$> args) objs
-                  params <- sequence [ (name,) <$> eval scope kind expr
-                                     | (kind, name) <- funcArgs callee
-                                     | expr         <- v
-                                     ]
+                      scope  = M.union (M.fromList $ fmap (WithPos undefined undefined undefined . ValueObject) <$> args) objs
+                      params = [ (name, either (const $ error "FIXME") id $ eval scope kind expr)
+                               | (kind, name) <- funcArgs callee
+                               | expr         <- v
+                               ]
                   result <- expandFunc (level+1) callee params
                   return $ if funcInline callee
                            then dropWhileEnd (== '\n') $ unlines result
                            else unlines $ "" : indent result
-                expandInst (Loop b) = do
+                expandInst (WithPos _ _ _ (Loop b)) = do
                   i <- indent . postProd <$> mapM expandInst b
                   return $ printf "\n[\n%s]\n" $ unlines i
-                expandInst (While c b) = do
+                expandInst (WithPos _ _ _ (While c b)) = do
                   t <- mapM expandInst c
                   i <- mapM expandInst b
                   return $ printf "%s\n[[-]<\n%s]<\n" (unlines $ postProd t) $ unlines $ indent $ postProd $ i ++ t
-                expandInst (If c b) = do
+                expandInst (WithPos _ _ _ (If c b)) = do
                   t <- unlines .          postProd <$> mapM expandInst c
                   i <- unlines . indent . postProd <$> mapM expandInst b
                   return $ printf "%s\n[[-]<\n%s>[-]]<\n" t i
@@ -92,5 +92,5 @@ assembleVerbosely objs = unlines <$> expandFunc 0 mainFunc []
 
 extractFun :: ObjectMap -> Name -> Function
 extractFun = getFun ... (M.!)
-  where getFun (FunctionObject f) = f
-        getFun _                  = error "should never happen"
+  where getFun (WithPos _ _ _ (FunctionObject f)) = f
+        getFun _ = error "should never happen"

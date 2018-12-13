@@ -7,6 +7,7 @@ module Object where
 import qualified Data.Map as M
 
 import           Grammar
+import           Types
 
 
 
@@ -16,9 +17,4 @@ data Object = FunctionObject Function
             | ValueObject    Value
             deriving (Show)
 
-data Entry = Entry { entryFile :: String
-                   , entryLine :: Int
-                   , entryObj  :: Object
-                   }
-
-type ObjectMap = M.Map String Object
+type ObjectMap = M.Map String (WithPos Object)
