@@ -136,13 +136,13 @@ checkFunction objs wp@(WithPos _ _ _ f) = do
       body     = funcBody f $ error "ICE: tried to compile a built-in function"
   if isPure && anyImpure (posThing <$> body)
   then report wp $ PureFunctionsContainsImpureCodeError $ funcName f
-  else
+  else do
     if not $ null dupNames
     then report wp $ DuplicateArgumentNamesError dupNames
-    else forM_ (funcArgs f) $ \(_, argName) -> do
+    else forM_ (funcArgs f) $ \(_, argName) ->
        when (argName `M.member` objs) $ report wp $ ArgumentNameShadowsObjectWarning argName $ objs M.! argName
-       result <- checkInstructions objs f (funcPure f) (reverse $ funcInput f) body
-       when (isPure && result /= reverse (funcOutput f)) $ report wp $ FunctionTypeDeclarationError f $ reverse result
+    result <- checkInstructions objs f (funcPure f) (reverse $ funcInput f) body
+    when (isPure && result /= reverse (funcOutput f)) $ report wp $ FunctionTypeDeclarationError f $ reverse result
   where isPure = funcPure f
 
 checkInstructions :: CompilerMonad m => ObjectMap -> Function -> Bool -> [Type] -> [WithPos Instruction] -> CompilerT m [Type]
