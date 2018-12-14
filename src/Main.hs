@@ -13,8 +13,8 @@ main = do
   case mObjs of
     Nothing -> putStrLn "Aborting."
     Just o  -> do
-      bfout <- either error return $ assembleVerbosely o
-      putStr bfout
+      putStr =<< either error return (assembleVerbosely o)
+      putStr =<< either error return (assembleDensely o)
 
 
 
