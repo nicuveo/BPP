@@ -124,17 +124,17 @@ expression = oneof
 
 constantName = ConstantName <$> name
 
-literalString = LiteralString <$> betweenQuotes (many $ oneof [esct, escn, escq, noneOf "\""])
-  where esct = char '\\' >> char 't' >> return '\t'
-        escn = char '\\' >> char 'n' >> return '\n'
-        escq = char '\\' >> char '"' >> return '"'
+literalString = LiteralString <$> betweenQuotes (many $ charExcept '"')
+literalChar = LiteralChar <$> between (char '\'') (char '\'') (charExcept '\'')
 
-literalChar = do
-  c <- between (char '\'') (char '\'') $ oneof [esct, escn, escq, noneOf "'"]
-  return $ LiteralChar c
-  where esct = char '\\' >> char 't'  >> return '\t'
-        escn = char '\\' >> char 'n'  >> return '\n'
-        escq = char '\\' >> char '\'' >> return '\''
+charExcept :: Char -> Parser Char
+charExcept c = oneof [ esc c c
+                     , esc 't' '\t'
+                     , esc 'n' '\n'
+                     , esc '\\' '\\'
+                     , noneOf $ c : "\\"
+                     ]
+  where esc x y = char '\\' >> char x >> return y :: Parser Char
 
 literalHex = do
   string "0x"
