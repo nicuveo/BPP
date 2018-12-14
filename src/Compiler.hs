@@ -181,27 +181,28 @@ checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (Loop lb)) = do
   when (typeCheck && newStack /= stack) $ reportAndStop wp $ BlockLoopNotStackNeutralError (stack, newStack)
   return newStack
 checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (If ic ib)) = do
-  cs@(cStackIn, cStackOut) <- foldM (guessStack objs) ([], []) ic
+  cs@(cStackIn, cStackOut) <- foldM (guessStack objs f) ([], []) ic
   when (cStackOut /= BFBool : cStackIn) $ report wp $ ConditionWrongTypeError cs
   newStack <- checkInstructions objs f typeCheck stack ib
   when (typeCheck && newStack /= stack) $ reportAndStop wp $ BlockIfNotStackNeutralError (stack, newStack)
   return newStack
 checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (While wc wb)) = do
-  cs@(cStackIn, cStackOut) <- foldM (guessStack objs) ([], []) wc
+  cs@(cStackIn, cStackOut) <- foldM (guessStack objs f) ([], []) wc
   when (cStackOut /= BFBool : cStackIn) $ report wp $ ConditionWrongTypeError cs
   newStack <- checkInstructions objs f typeCheck stack wb
   when (typeCheck && newStack /= stack) $ reportAndStop wp $ BlockWhileNotStackNeutralError (stack, newStack)
   return newStack
 
-guessStack :: CompilerMonad m => ObjectMap -> ([Type], [Type]) -> WithPos Instruction -> CompilerT m ([Type], [Type])
-guessStack objs s@(initStack, currentStack) wp@(WithPos _ _ _ (FunctionCall n _)) =
+guessStack :: CompilerMonad m => ObjectMap -> Function -> ([Type], [Type]) -> WithPos Instruction -> CompilerT m ([Type], [Type])
+guessStack objs f s@(initStack, currentStack) wp@(WithPos _ _ _ (FunctionCall n _)) =
   case getFunction objs n of
     Left err -> report wp err >> return s
     Right  g -> do
-      let newInitStack = initStack ++ drop (length currentStack) (reverse $ funcInput g)
-      newCurrentStack <- checkInstruction objs g True newInitStack wp
+      let missing = drop (length currentStack) $ reverse $ funcInput g
+          newInitStack = initStack ++ missing
+      newCurrentStack <- checkInstruction objs f True (currentStack ++ missing) wp
       return (newInitStack, newCurrentStack)
-guessStack _ s wp = report wp (ConditionWrongInstructionError $ posThing wp) >> return s
+guessStack _ _ s wp = report wp (ConditionWrongInstructionError $ posThing wp) >> return s
 
 getFunction :: ObjectMap -> Name -> Either Error Function
 getFunction objs n =
