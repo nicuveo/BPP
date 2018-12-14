@@ -3,6 +3,7 @@
 module Assembler where
 
 import           Control.Monad
+import           Data.Function
 import           Data.List       as L
 import           Data.List.Split (chunksOf)
 import qualified Data.Map        as M
@@ -17,7 +18,11 @@ import           Types
 assembleVerbosely :: Monad m => ObjectMap -> m String
 assembleVerbosely objs = unlines <$> expandFunc 0 mainFunc []
   where mainFunc = extractFun objs "main"
-        postProd = (chunksOf 100 =<<) . lines . concat
+        postProd = (chunkify =<<) . groupBy bothCode . lines . concat
+        bothCode = (&&) `on` (not . isPrefixOf "  ")
+        chunkify s
+          | "  " `isPrefixOf` concat s = s
+          | otherwise                  = chunksOf 100 $ concat s
         indent   = map ("  " ++)
         render v = filter (`notElem` "+-[],.<>") $ intercalate "; " [n ++ "=" ++ show x | (n,x) <- v]
         expandFunc :: Monad m => Int -> Function -> [(String, Value)] -> m [String]

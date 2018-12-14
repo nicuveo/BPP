@@ -48,5 +48,5 @@ testData = "// Test\
            \\ndef impure inline true() [] -> [B] { >+ }\n\
            \\ndef impure inline foo() [] -> [] { ++--++ }\n\
            \\ndef impure baz(I a, C b, S c) [] -> [] { foo [-] foo() }\
-           \\ndef main() { foo baz(s3, 42, \"test\") foo if(true) { foo } endl }\
+           \\ndef main() { foo baz(s3, 42, \"test\") foo pushc(220) if(true) { set(200) } prints(\"toto\n\") popc }\
            \\n"
