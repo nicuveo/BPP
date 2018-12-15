@@ -70,13 +70,13 @@ compile filename = do
     S.modify $ addModule mName $ objects state
   when (any isError diagnostics) $ E.throwError ()
 
-step :: CompilerMonad m => WithPos Statement -> CompilerT m ()
-step (WithPos _ _ _ (Comment _)) = return ()
-step (WithPos _ _ _ (Include filename)) = do
+step :: CompilerMonad m => WithLocation Statement -> CompilerT m ()
+step (WL _ (Comment _)) = return ()
+step (WL _ (Include filename)) = do
   cache <- S.gets moduleCache
   -- TODO: handle file not found
   when (moduleName filename `M.notMember` cache) $ compile filename
-step wp@(WithPos _ _ _ (ConstantDecl n)) = do
+step wp@(WL _ (ConstantDecl n)) = do
   objs <- S.gets objects
   let cName = constName n
   if cName `M.member` objs
@@ -84,7 +84,7 @@ step wp@(WithPos _ _ _ (ConstantDecl n)) = do
   else case eval objs (constType n) $ constExpr n of
     Left  err   -> report wp err
     Right value -> S.modify $ addObject cName $ ValueObject value <$ wp
-step wp@(WithPos _ _ _ (FunctionDecl f)) = do
+step wp@(WL _ (FunctionDecl f)) = do
   objs <- S.gets objects
   let fName = funcName f
   if fName `M.member` objs
@@ -115,8 +115,8 @@ eval objs kind (ConstantName n) =
   if n `M.notMember` objs
   then Left $ ConstantNotFoundError n
   else case objs M.! n of
-         WithPos _ _ _ (ValueObject val) -> cast val kind
-         wp                              -> Left $ ExpectedValueGotFunctionError n wp
+         WL _ (ValueObject val) -> cast val kind
+         wp                     -> Left $ ExpectedValueGotFunctionError n wp
 
 cast :: Value -> Type -> Either Error Value
 cast (VChar c) BFInt = Right $ VInt  $ ord c
@@ -129,12 +129,12 @@ BFChar `canCastTo` BFInt = True
 a      `canCastTo` b     = a == b
 
 
-checkFunction :: CompilerMonad m => ObjectMap -> WithPos Function -> CompilerT m ()
-checkFunction objs wp@(WithPos _ _ _ f) = do
+checkFunction :: CompilerMonad m => ObjectMap -> WithLocation Function -> CompilerT m ()
+checkFunction objs wp@(WL _ f) = do
   let argNames = snd <$> funcArgs f
       dupNames = argNames \\ nub argNames
       body     = funcBody f $ error "ICE: tried to compile a built-in function"
-  if isPure && anyImpure (posThing <$> body)
+  if isPure && anyImpure (getEntry <$> body)
   then report wp $ PureFunctionsContainsImpureCodeError $ funcName f
   else do
     if not $ null dupNames
@@ -145,12 +145,12 @@ checkFunction objs wp@(WithPos _ _ _ f) = do
     when (isPure && result /= reverse (funcOutput f)) $ report wp $ FunctionTypeDeclarationError f $ reverse result
   where isPure = funcPure f
 
-checkInstructions :: CompilerMonad m => ObjectMap -> Function -> Bool -> [Type] -> [WithPos Instruction] -> CompilerT m [Type]
+checkInstructions :: CompilerMonad m => ObjectMap -> Function -> Bool -> [Type] -> [WithLocation Instruction] -> CompilerT m [Type]
 checkInstructions objs f typeCheck = foldM $ checkInstruction objs f typeCheck
 
-checkInstruction :: CompilerMonad m => ObjectMap -> Function -> Bool -> [Type] -> WithPos Instruction -> CompilerT m [Type]
-checkInstruction _    _ _         stack (WithPos _ _ _ (RawBrainfuck _)) = return stack
-checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (FunctionCall n v)) =
+checkInstruction :: CompilerMonad m => ObjectMap -> Function -> Bool -> [Type] -> WithLocation Instruction -> CompilerT m [Type]
+checkInstruction _    _ _         stack (WL _ (RawBrainfuck _)) = return stack
+checkInstruction objs f typeCheck stack wp@(WL _ (FunctionCall n v)) =
   case getFunction objs n of
     Left err -> reportAndStop wp err
     Right  g ->
@@ -173,28 +173,28 @@ checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (FunctionCall n v)) =
           case find (\(_, arg) -> arg == name) $ funcArgs f of
             Just (kind, _) -> Right $ if kind `canCastTo` k then k else kind
             Nothing        -> case objs M.!? name of
-              Just (WithPos _ _ _ (ValueObject   vo)) -> Right $ if typeof vo `canCastTo` k then k else typeof vo
-              Just other                              -> Left  $ ExpectedValueGotFunctionError name other
-              Nothing                                 -> Left  $ ConstantNotFoundError name
-checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (Loop lb)) = do
+              Just (WL _ (ValueObject   vo)) -> Right $ if typeof vo `canCastTo` k then k else typeof vo
+              Just other                     -> Left  $ ExpectedValueGotFunctionError name other
+              Nothing                        -> Left  $ ConstantNotFoundError name
+checkInstruction objs f typeCheck stack wp@(WL _ (Loop lb)) = do
   newStack <- checkInstructions objs f typeCheck stack lb
   when (typeCheck && newStack /= stack) $ reportAndStop wp $ BlockLoopNotStackNeutralError (stack, newStack)
   return newStack
-checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (If ic ib)) = do
+checkInstruction objs f typeCheck stack wp@(WL _ (If ic ib)) = do
   cs@(cStackIn, cStackOut) <- foldM (guessStack objs f) ([], []) ic
   when (cStackOut /= BFBool : cStackIn) $ report wp $ ConditionWrongTypeError cs
   newStack <- checkInstructions objs f typeCheck stack ib
   when (typeCheck && newStack /= stack) $ reportAndStop wp $ BlockIfNotStackNeutralError (stack, newStack)
   return newStack
-checkInstruction objs f typeCheck stack wp@(WithPos _ _ _ (While wc wb)) = do
+checkInstruction objs f typeCheck stack wp@(WL _ (While wc wb)) = do
   cs@(cStackIn, cStackOut) <- foldM (guessStack objs f) ([], []) wc
   when (cStackOut /= BFBool : cStackIn) $ report wp $ ConditionWrongTypeError cs
   newStack <- checkInstructions objs f typeCheck stack wb
   when (typeCheck && newStack /= stack) $ reportAndStop wp $ BlockWhileNotStackNeutralError (stack, newStack)
   return newStack
 
-guessStack :: CompilerMonad m => ObjectMap -> Function -> ([Type], [Type]) -> WithPos Instruction -> CompilerT m ([Type], [Type])
-guessStack objs f s@(initStack, currentStack) wp@(WithPos _ _ _ (FunctionCall n _)) =
+guessStack :: CompilerMonad m => ObjectMap -> Function -> ([Type], [Type]) -> WithLocation Instruction -> CompilerT m ([Type], [Type])
+guessStack objs f s@(initStack, currentStack) wp@(WL _ (FunctionCall n _)) =
   case getFunction objs n of
     Left err -> report wp err >> return s
     Right  g -> do
@@ -202,14 +202,14 @@ guessStack objs f s@(initStack, currentStack) wp@(WithPos _ _ _ (FunctionCall n 
           newInitStack = initStack ++ missing
       newCurrentStack <- checkInstruction objs f True (currentStack ++ missing) wp
       return (newInitStack, newCurrentStack)
-guessStack _ _ s wp = report wp (ConditionWrongInstructionError $ posThing wp) >> return s
+guessStack _ _ s wp = report wp (ConditionWrongInstructionError $ getEntry wp) >> return s
 
 getFunction :: ObjectMap -> Name -> Either Error Function
 getFunction objs n =
   case objs M.!? n of
-    Just (WithPos _ _ _ (FunctionObject g)) -> Right g
-    Just wp                                 -> Left $ ExpectedFunctionGotValueError n wp
-    Nothing                                 -> Left $ FunctionNotFoundError n
+    Just (WL _ (FunctionObject g)) -> Right g
+    Just wp                        -> Left $ ExpectedFunctionGotValueError n wp
+    Nothing                        -> Left $ FunctionNotFoundError n
 
 
 
@@ -218,11 +218,11 @@ getFunction objs n =
 addModule :: String -> ObjectMap -> CompilerState -> CompilerState
 addModule name object state = state { moduleCache = M.insert name object $ moduleCache state }
 
-addObject :: String -> WithPos Object -> CompilerState -> CompilerState
+addObject :: String -> WithLocation Object -> CompilerState -> CompilerState
 addObject name object state = state { objects = M.insert name object $ objects state }
 
-report :: CompilerMonad m => WithPos a -> Error -> CompilerT m ()
+report :: CompilerMonad m => WithLocation a -> Error -> CompilerT m ()
 report wp e = W.tell [e <$ wp]
 
-reportAndStop :: CompilerMonad m => WithPos a -> Error -> CompilerT m b
+reportAndStop :: CompilerMonad m => WithLocation a -> Error -> CompilerT m b
 reportAndStop = (>> E.throwError ()) ... report

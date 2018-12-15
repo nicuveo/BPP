@@ -173,8 +173,8 @@ symbol :: String -> Parser String
 symbol s = string s <* spaces
 
 
-addPosition :: SourcePos -> a -> WithPos a
-addPosition p = WithPos n l c
+addPosition :: SourcePos -> a -> WithLocation a
+addPosition p = WL $ Location n l c
   where n = sourceName   p
         l = sourceLine   p
         c = sourceColumn p

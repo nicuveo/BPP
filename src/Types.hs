@@ -18,17 +18,20 @@ type Name      = String
 
 -- position info
 
-data WithPos a = WithPos { posModule :: String
-                         , posLine   :: Int
-                         , posColumn :: Int
-                         , posThing  :: a
+data Location = Location { locFileName :: String
+                         , locLine     :: Int
+                         , locColumn   :: Int
                          }
 
-instance Show a => Show (WithPos a) where
-  show (WithPos m l c x) = printf "%s:%d:%d:%s" m l c $ show x
+data WithLocation a = WL { getLocation :: Location
+                         , getEntry    :: a
+                         }
 
-instance Functor WithPos where
-  fmap f (WithPos m l c x) = WithPos m l c $ f x
+instance Show a => Show (WithLocation a) where
+  show (WL (Location m l c) x) = printf "%s:%d:%d:%s" m l c $ show x
+
+instance Functor WithLocation where
+  fmap f (WL l x) = WL l $ f x
 
 
 

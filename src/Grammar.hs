@@ -13,7 +13,7 @@ import           Types
 
 -- grammar
 
-type Program = [WithPos Statement]
+type Program = [WithLocation Statement]
 
 data Statement = Include      Filename
                | Comment      Raw
@@ -23,9 +23,9 @@ data Statement = Include      Filename
 
 data Instruction = FunctionCall Name [Expression]
                  | RawBrainfuck Raw
-                 | If           [WithPos Instruction] [WithPos Instruction]
-                 | Loop         [WithPos Instruction]
-                 | While        [WithPos Instruction] [WithPos Instruction]
+                 | If           [WithLocation Instruction] [WithLocation Instruction]
+                 | Loop         [WithLocation Instruction]
+                 | While        [WithLocation Instruction] [WithLocation Instruction]
                  deriving (Show)
 
 data Expression = ConstantName  Name
@@ -46,7 +46,7 @@ data Function = Function { funcName   :: Name
                          , funcArgs   :: [Variable]
                          , funcInput  :: [Type]
                          , funcOutput :: [Type]
-                         , funcBody   :: [(String, Value)] -> [WithPos Instruction]
+                         , funcBody   :: [(String, Value)] -> [WithLocation Instruction]
                          }
 
 
@@ -62,9 +62,9 @@ instance Show Function where
 isImpure :: Instruction -> Bool
 isImpure (FunctionCall _ _) = False
 isImpure (RawBrainfuck _  ) = True
-isImpure (Loop         b  ) = anyImpure (posThing <$> b)
-isImpure (If           c b) = anyImpure (posThing <$> c) || anyImpure (posThing <$> b)
-isImpure (While        c b) = anyImpure (posThing <$> c) || anyImpure (posThing <$> b)
+isImpure (Loop         b  ) = anyImpure (getEntry <$> b)
+isImpure (If           c b) = anyImpure (getEntry <$> c) || anyImpure (getEntry <$> b)
+isImpure (While        c b) = anyImpure (getEntry <$> c) || anyImpure (getEntry <$> b)
 
 anyImpure :: [Instruction] -> Bool
 anyImpure = any isImpure

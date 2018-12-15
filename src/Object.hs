@@ -17,4 +17,4 @@ data Object = FunctionObject Function
             | ValueObject    Value
             deriving (Show)
 
-type ObjectMap = M.Map String (WithPos Object)
+type ObjectMap = M.Map String (WithLocation Object)

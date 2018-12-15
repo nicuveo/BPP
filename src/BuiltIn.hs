@@ -71,7 +71,7 @@ rollFunctions   = rollcn : rollin : concat [[rollc n, rolli n] | n <- [2 .. 9]]
         roll  n [("s", VInt s)] = rollCode n s
         roll  _ _ = error "ICE"
 
-rollCode :: Int -> Int -> [WithPos Instruction]
+rollCode :: Int -> Int -> [WithLocation Instruction]
 rollCode n s = dummyPos . RawBrainfuck <$> [ '>' : replicate s '+'
                                            , "[-<[->>+<<]"
                                            , concat $ replicate (n-1) "<[->+<]"
@@ -95,7 +95,7 @@ dupFunctions   = dupcn : dupin : concat [[dupc n, dupi n] | n <- [1 .. 9]]
         dup  n [] = dupCode n
         dup  _ _ = error "ICE"
 
-dupCode :: Int -> [WithPos Instruction]
+dupCode :: Int -> [WithLocation Instruction]
 dupCode n = fmap (dummyPos . RawBrainfuck) $ concat $
   replicate n [ replicate (n-1) '<', "[-"
               , replicate n '>', "+>+<"
@@ -106,5 +106,5 @@ dupCode n = fmap (dummyPos . RawBrainfuck) $ concat $
               ]
 
 
-dummyPos :: a -> WithPos a
-dummyPos = WithPos "<builtin>" 0 0
+dummyPos :: a -> WithLocation a
+dummyPos = WL $ Location "<builtin>" 0 0

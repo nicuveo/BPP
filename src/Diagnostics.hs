@@ -6,12 +6,12 @@ import           Object
 import           Types
 
 
-type Diagnostic  = WithPos Error
+type Diagnostic  = WithLocation Error
 type Diagnostics = [Diagnostic]
 
-data Error = ConstantAlreadyDefinedError           String (WithPos Object)
-           | FunctionAlreadyDefinedError           String (WithPos Object)
-           | ArgumentNameShadowsObjectWarning      String (WithPos Object)
+data Error = ConstantAlreadyDefinedError           String (WithLocation Object)
+           | FunctionAlreadyDefinedError           String (WithLocation Object)
+           | ArgumentNameShadowsObjectWarning      String (WithLocation Object)
            | IntLiteralError                       Type Int
            | CharLiteralError                      Type Char
            | StringLiteralError                    Type String
@@ -25,8 +25,8 @@ data Error = ConstantAlreadyDefinedError           String (WithPos Object)
            | BlockWhileNotStackNeutralError        ([Type], [Type])
            | ConditionWrongTypeError               ([Type], [Type])
            | ConditionWrongInstructionError        Instruction
-           | ExpectedValueGotFunctionError         String (WithPos Object)
-           | ExpectedFunctionGotValueError         String (WithPos Object)
+           | ExpectedValueGotFunctionError         String (WithLocation Object)
+           | ExpectedFunctionGotValueError         String (WithLocation Object)
            | PureFunctionsContainsImpureCodeError  String
            | ConstantNotFoundError                 String
            | FunctionNotFoundError                 String
@@ -34,5 +34,5 @@ data Error = ConstantAlreadyDefinedError           String (WithPos Object)
            deriving (Show)
 
 isError :: Diagnostic -> Bool
-isError (WithPos _ _ _ (ArgumentNameShadowsObjectWarning _ _)) = False
+isError (WL _ (ArgumentNameShadowsObjectWarning _ _)) = False
 isError _ = True

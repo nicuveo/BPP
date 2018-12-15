@@ -29,34 +29,30 @@ assembleVerbosely objs = unlines <$> expandFunc 0 mainFunc []
         expandFunc level func args = do
           when (level > 99) $ fail "stack too deep"
           i <- postProd <$> mapM expandInst (funcBody func args)
-          let header = printf "%s%s" (funcName func) $
-                if null args then "" else "(" ++ render args ++ ")"
+          let header = printf "%s%s" (funcName func) $ if null args
+                                                       then ""
+                                                       else "(" ++ render args ++ ")"
           return $ if funcInline func
                    then i
                    else header : i
-          where expandInst :: Monad m => WithPos Instruction -> m String
-                expandInst (WithPos _ _ _ (RawBrainfuck r)) = return r
-                expandInst (WithPos _ _ _ (FunctionCall g v)) = do
+          where expandInst :: Monad m => WithLocation Instruction -> m String
+                expandInst (WL _ (RawBrainfuck r)) = return r
+                expandInst (WL _ (FunctionCall g v)) = do
                   let callee = extractFun objs g
-                      scope  = M.union (M.fromList $ fmap (WithPos undefined undefined undefined . ValueObject) <$> args) objs
-                      params = [ (name, either (const $ error "FIXME") id $ eval scope kind expr)
-                               | (kind, name) <- funcArgs callee
-                               | expr         <- v
-                               ]
-                  result <- expandFunc (level+1) callee params
+                  result <- expandFunc (level+1) callee $ extractParams objs func args callee v
                   return $ if funcInline callee
                            then dropWhileEnd (== '\n') $ unlines result
                            else unlines $ "" : indent result
-                expandInst (WithPos _ _ _ (Loop b)) = do
+                expandInst (WL _ (Loop b)) = do
                   i <- indent . postProd <$> mapM expandInst b
                   return $ printf "[\n  loop\n%s]\n" $ dropWhileEnd(=='\n') $ unlines i
-                expandInst (WithPos _ _ _ (While c b)) = do
+                expandInst (WL _ (While c b)) = do
                   t <- mapM expandInst c
                   i <- mapM expandInst b
                   let ppt = dropWhileEnd(=='\n') $ unlines $ postProd t
                       ppi = dropWhileEnd(=='\n') $ unlines $ indent $ postProd $ i ++ t
                   return $ printf "%s[[-]<\n  while\n%s]<\n" ppt ppi
-                expandInst (WithPos _ _ _ (If c b)) = do
+                expandInst (WL _ (If c b)) = do
                   t <- dropWhileEnd(=='\n') . unlines .          postProd <$> mapM expandInst c
                   i <- dropWhileEnd(=='\n') . unlines . indent . postProd <$> mapM expandInst b
                   return $ printf "%s[[-]<\n  if\n%s\n>[-]]<\n" t i
@@ -68,29 +64,33 @@ assembleDensely objs = unlines . chunksOf 120 . concat <$> expandFunc 0 mainFunc
         expandFunc level func args = do
           when (level > 99) $ fail "stack too deep"
           mapM expandInst $ funcBody func args
-          where expandInst :: Monad m => WithPos Instruction -> m String
-                expandInst (WithPos _ _ _ (RawBrainfuck r)) = return r
-                expandInst (WithPos _ _ _ (FunctionCall g v)) = do
+          where expandInst :: Monad m => WithLocation Instruction -> m String
+                expandInst (WL _ (RawBrainfuck r)) = return r
+                expandInst (WL _ (FunctionCall g v)) = do
                   let callee = extractFun objs g
-                      scope  = M.union (M.fromList $ fmap (WithPos undefined undefined undefined . ValueObject) <$> args) objs
-                      params = [ (name, either (const $ error "FIXME") id $ eval scope kind expr)
-                               | (kind, name) <- funcArgs callee
-                               | expr         <- v
-                               ]
-                  concat <$> expandFunc (level+1) callee params
-                expandInst (WithPos _ _ _ (Loop b)) = do
+                  concat <$> expandFunc (level+1) callee (extractParams objs func args callee v)
+                expandInst (WL _ (Loop b)) = do
                   i <- concat <$> mapM expandInst b
                   return $ printf "[%s]" i
-                expandInst (WithPos _ _ _ (While c b)) = do
+                expandInst (WL _ (While c b)) = do
                   t <- concat <$> mapM expandInst c
                   i <- concat <$> mapM expandInst b
                   return $ printf "%s[[-]<%s%s]<" t i t
-                expandInst (WithPos _ _ _ (If c b)) = do
+                expandInst (WL _ (If c b)) = do
                   t <- concat <$> mapM expandInst c
                   i <- concat <$> mapM expandInst b
                   return $ printf "%s[[-]<%s>[-]]<" t i
 
+
+extractParams :: ObjectMap -> Function -> [(String, Value)] -> Function -> [Expression] -> [(String, Value)]
+extractParams objs _ argsCaller callee argsCallee =
+  [ (name, either (const $ error "FIXME") id $ eval scope kind expr)
+  | (kind, name) <- funcArgs callee
+  | expr         <- argsCallee
+  ]
+  where scope = M.union (M.fromList $ fmap (WL undefined . ValueObject) <$> argsCaller) objs
+
 extractFun :: ObjectMap -> Name -> Function
 extractFun = getFun ... (M.!)
-  where getFun (WithPos _ _ _ (FunctionObject f)) = f
+  where getFun (WL _ (FunctionObject f)) = f
         getFun _ = error "should never happen"
