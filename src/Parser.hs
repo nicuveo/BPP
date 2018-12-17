@@ -12,6 +12,7 @@ import           Text.Parsec
 import           Text.Parsec.String
 
 import           Grammar
+import           Module
 import           Types
 
 
@@ -29,11 +30,15 @@ program = statement `sepEndBy` many newline <* eof
 
 statement = do
   pos <- getPosition
-  addPosition pos <$> oneof [ include
-                            , comment
-                            , constant
-                            , function
-                            ]
+  flip label statementLabel $
+    addPosition pos <$> oneof [ include
+                              , comment
+                              , constant
+                              , function
+                              ]
+
+statementLabel = "expecting a statement (include directive, comment, \
+                 \constant declaration, or function declaration)"
 
 include = do
   symbol "include"
@@ -174,7 +179,7 @@ symbol s = string s <* spaces
 
 
 addPosition :: SourcePos -> a -> WithLocation a
-addPosition p = WL $ Location n l c
+addPosition p = WL $ SourceFile n l c
   where n = sourceName   p
         l = sourceLine   p
         c = sourceColumn p

@@ -2,8 +2,8 @@ module Diagnostics where
 
 
 import           Grammar
+import           Module
 import           Object
-import           Types
 
 
 type Diagnostic  = WithLocation Error

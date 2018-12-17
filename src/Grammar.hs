@@ -7,6 +7,7 @@ module Grammar where
 import           Data.List
 import           Text.Printf
 
+import           Module
 import           Types
 
 

@@ -23,6 +23,7 @@ import           BuiltIn
 import           Diagnostics
 import           Grammar
 import           Object
+import           Module
 import           Parser
 import           Types
 

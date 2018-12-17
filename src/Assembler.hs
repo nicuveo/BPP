@@ -11,6 +11,7 @@ import           Text.Printf
 
 import           Compiler
 import           Grammar
+import           Module
 import           Object
 import           Types
 

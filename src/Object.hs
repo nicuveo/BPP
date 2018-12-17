@@ -7,7 +7,7 @@ module Object where
 import qualified Data.Map as M
 
 import           Grammar
-import           Types
+import           Module
 
 
 

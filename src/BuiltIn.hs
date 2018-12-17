@@ -1,55 +1,65 @@
 module BuiltIn where
 
+
+
+-- imports
+
 import           Data.Char
 import           Data.List as L
 import qualified Data.Map  as M
 
 import           Grammar
+import           Module
 import           Object
-import           Types
 
 import           Paths_BPP
 
+
+
+-- prelude
 
 preludeFile :: IO String
 preludeFile = readFile =<< getDataFileName "src/Prelude.bs"
 
 
+
+-- builtin functions
+
 builtinFunctions :: ObjectMap
 builtinFunctions = foldl' insertFunc M.empty $ [pushc, pushi, set, inc, dec, prints] ++ dupFunctions ++ rollFunctions
-  where insertFunc m f = M.insert (funcName f) (dummyPos $ FunctionObject f) m
+  where insertFunc m f = M.insert (funcName f) (builtinLocation $ FunctionObject f) m
 
 
 pushc :: Function
 pushc = Function "pushc" False True [(BFChar, "c")] [] [BFChar] pushc_
-  where pushc_ [("c", VChar c)] = [dummyPos $ RawBrainfuck $ '>' : replicate (ord c) '+']
+  where pushc_ [("c", VChar c)] = [builtinLocation $ RawBrainfuck $ '>' : replicate (ord c) '+']
         pushc_ _ = error "ICE"
 
 pushi :: Function
 pushi = Function "pushi" False True [(BFInt, "x")] [] [BFInt] pushi_
-  where pushi_ [("x", VInt x)] = [dummyPos $ RawBrainfuck $ concat ['>' : replicate i '+' | i <- reverse $ decompose 3 x]]
+  where pushi_ [("x", VInt x)] = [builtinLocation $ RawBrainfuck $ concat ['>' : replicate i '+' | i <- reverse $ decompose 3 x]]
         pushi_ _ = error "ICE"
         decompose n x = undefined
 
 set :: Function
 set = Function "set" False True [(BFChar, "x")] [BFChar] [BFChar] set_
-  where set_ [("x", VChar x)] = [dummyPos $ RawBrainfuck $ "[-]" ++ replicate (ord x) '+']
+  where set_ [("x", VChar x)] = [builtinLocation $ RawBrainfuck $ "[-]" ++ replicate (ord x) '+']
         set_ _ = error "ICE"
 
 inc :: Function
 inc = Function "inc" False True [(BFChar, "x")] [BFChar] [BFChar] inc_
-  where inc_ [("x", VChar x)] = [dummyPos $ RawBrainfuck $ replicate (ord x) '+']
+  where inc_ [("x", VChar x)] = [builtinLocation $ RawBrainfuck $ replicate (ord x) '+']
         inc_ _ = error "ICE"
 
 dec :: Function
 dec = Function "dec" False True [(BFChar, "x")] [BFChar] [BFChar] dec_
-  where dec_ [("x", VChar x)] = [dummyPos $ RawBrainfuck $ replicate (ord x) '-']
+  where dec_ [("x", VChar x)] = [builtinLocation $ RawBrainfuck $ replicate (ord x) '-']
         dec_ _ = error "ICE"
 
 
 prints :: Function
 prints = Function "prints" False False [(BFString, "s")] [] [] dec_
-  where dec_ [("s", VString s)] = dummyPos . RawBrainfuck <$>
+  where dec_ [("s", VString s)] = builtinLocation . RawBrainfuck <$>
           [ ">"
           , snd $ foldl' nextChar (0, "") $ ord <$> s
           , "<"
@@ -72,7 +82,7 @@ rollFunctions   = rollcn : rollin : concat [[rollc n, rolli n] | n <- [2 .. 9]]
         roll  _ _ = error "ICE"
 
 rollCode :: Int -> Int -> [WithLocation Instruction]
-rollCode n s = dummyPos . RawBrainfuck <$> [ '>' : replicate s '+'
+rollCode n s = builtinLocation . RawBrainfuck <$> [ '>' : replicate s '+'
                                            , "[-<[->>+<<]"
                                            , concat $ replicate (n-1) "<[->+<]"
                                            , replicate n '>'
@@ -96,7 +106,7 @@ dupFunctions   = dupcn : dupin : concat [[dupc n, dupi n] | n <- [1 .. 9]]
         dup  _ _ = error "ICE"
 
 dupCode :: Int -> [WithLocation Instruction]
-dupCode n = fmap (dummyPos . RawBrainfuck) $ concat $
+dupCode n = fmap (builtinLocation . RawBrainfuck) $ concat $
   replicate n [ replicate (n-1) '<', "[-"
               , replicate n '>', "+>+<"
               , replicate n '<', "]>"
@@ -106,5 +116,5 @@ dupCode n = fmap (dummyPos . RawBrainfuck) $ concat $
               ]
 
 
-dummyPos :: a -> WithLocation a
-dummyPos = WL $ Location "<builtin>" 0 0
+builtinLocation :: a -> WithLocation a
+builtinLocation = WL BuiltIn
