@@ -66,9 +66,11 @@ compile filename = do
     content  <- liftBase $ resolver filename
     state    <- S.get
     let mName   = moduleName filename
-        program = parseProgram mName content
-    sequence_ $ step <$> program
-    S.modify $ addModule mName $ objects state
+    case parseProgram mName content of
+      Left diagnostic -> W.tell [diagnostic]
+      Right program   -> do
+        sequence_ $ step <$> program
+        S.modify $ addModule mName $ objects state
   when (any isError diagnostics) $ E.throwError ()
 
 step :: CompilerMonad m => WithLocation Statement -> CompilerT m ()

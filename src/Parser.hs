@@ -6,11 +6,13 @@ module Parser (parseProgram) where
 
 -- imports
 
+import           Control.Arrow      (left)
 import           Data.List
 import           Numeric
 import           Text.Parsec
 import           Text.Parsec.String
 
+import           Diagnostics
 import           Grammar
 import           Module
 import           Types
@@ -19,8 +21,9 @@ import           Types
 
 -- program
 
-parseProgram :: Filename -> String -> Program
-parseProgram = either (error . show) id ... parse program
+parseProgram :: Filename -> String -> Either Diagnostic Program
+parseProgram = left toDiagnostic ... parse program
+  where toDiagnostic pe = addPosition (errorPos pe) $ ParseError $ show pe
 
 program = statement `sepEndBy` many newline <* eof
 

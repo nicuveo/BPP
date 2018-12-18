@@ -31,6 +31,7 @@ data Error = ConstantAlreadyDefinedError           String (WithLocation Object)
            | ConstantNotFoundError                 String
            | FunctionNotFoundError                 String
            | DuplicateArgumentNamesError           [String]
+           | ParseError                            String
            deriving (Show)
 
 isError :: Diagnostic -> Bool
