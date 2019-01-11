@@ -6,11 +6,9 @@ module Parser (parseProgram) where
 
 -- imports
 
-import           Control.Arrow      (left)
-import           Data.List
-import           Numeric
+import           Control.Arrow     (left)
 import           Text.Parsec
-import           Text.Parsec.String
+import qualified Text.Parsec.Token as P
 
 import           Diagnostics
 import           Grammar
@@ -25,7 +23,39 @@ parseProgram :: Filename -> String -> Either Diagnostic Program
 parseProgram = left toDiagnostic ... parse program
   where toDiagnostic pe = addPosition (errorPos pe) $ ParseError $ show pe
 
-program = statement `sepEndBy` many newline <* eof
+program = whiteSpace *> (statement `sepEndBy` many newline) <* eof
+
+
+
+-- language definition
+
+
+language :: P.TokenParser st
+language = P.makeTokenParser $ P.LanguageDef { P.commentStart    = "/*"
+                                             , P.commentEnd      = "*/"
+                                             , P.commentLine     = "//"
+                                             , P.nestedComments  = True
+                                             , P.identStart      = char '_' <|> letter
+                                             , P.identLetter     = char '_' <|> alphaNum
+                                             , P.opStart         = parserZero
+                                             , P.opLetter        = parserZero
+                                             , P.reservedOpNames = []
+                                             , P.reservedNames   = ["if", "while", "loop", "include", "def", "const", "inline", "impure"]
+                                             , P.caseSensitive   = True
+                                             }
+
+whiteSpace = P.whiteSpace    language
+lexeme     = P.lexeme        language
+symbol     = P.symbol        language
+reserved   = P.reserved      language
+identifier = P.identifier    language
+parens     = P.parens        language
+braces     = P.braces        language
+brackets   = P.brackets      language
+commaSep   = P.commaSep      language
+cLiteral   = P.charLiteral   language
+sLiteral   = P.stringLiteral language
+iLiteral   = P.integer       language
 
 
 
@@ -33,49 +63,36 @@ program = statement `sepEndBy` many newline <* eof
 
 statement = do
   pos <- getPosition
-  flip label statementLabel $
-    addPosition pos <$> oneof [ include
-                              , comment
-                              , constant
-                              , function
-                              ]
-
-statementLabel = "expecting a statement (include directive, comment, \
-                 \constant declaration, or function declaration)"
+  addPosition pos <$> choice
+    [ include
+    , constant
+    , function
+    ] <?> "statement (include directive, constant declaration, function declaration)"
 
 include = do
-  symbol "include"
-  filename <- betweenQuotes $ many1 $ noneOf "\"\n\t"
-  return $ Include filename
-
-comment = do
-  symbol "//"
-  text <- many $ noneOf "\n"
-  return $ Comment text
+  reserved "include"
+  Include <$> sLiteral
 
 constant = do
-  symbol "const"
+  reserved "const"
   (t, n) <- variable
-  spaces
   symbol "="
   e <- expression
   return $ ConstantDecl $ Constant t n e
 
 function = do
-  symbol "def"
-  k <- oneof (string <$> keywords) `sepEndBy` many1 space
+  reserved "def"
+  k <- many $ choice keywords
   let p = impure `notElem` k
       l = inline `elem` k
-  n <- name
-  a <- betweenParens $ variable `sepBy` symbol ","
+  n <- identifier
+  a <- parens $ commaSep variable
   (i, o) <- option ([], []) $ do
-    many space
-    i <- betweenBrackets $ typename `sepBy` symbol ","
+    i <- brackets $ commaSep typename
     symbol "->"
-    many space
-    o <- betweenBrackets $ typename `sepBy` symbol ","
+    o <- brackets $ commaSep typename
     return (i, o)
-  b <- betweenCurlies $ instruction `sepEndBy` spaces
+  b <- braces $ many instruction
   return $ FunctionDecl $ Function n p l a i o $ const b
 
 
@@ -84,102 +101,69 @@ function = do
 
 instruction = do
   pos  <- getPosition
-  addPosition pos <$> oneof [ rawBrainfuck
-                            , ifb
-                            , loop
-                            , while
-                            , functionCall
-                            ]
+  addPosition pos <$> choice
+    [ functionCall
+    , ifb
+    , loop
+    , while
+    , rawBrainfuck
+    ] <?> "instruction (function call, if, loop, while, or raw brainfuck code)"
 
 functionCall = do
-  n <- name
-  a <- option [] $ try $ betweenParens $ expression `sepBy` symbol ","
+  n <- identifier
+  a <- option [] $ parens $ commaSep expression
   return $ FunctionCall n a
 
-rawBrainfuck = do
-  let valid = oneof $ char <$> brainfuckChars
-  s <- many1 valid `sepEndBy1` spaces
-  return $ RawBrainfuck $ concat s
-
 ifb = do
-  symbol "if"
-  c <- betweenParens  $ instruction `sepEndBy` spaces
-  b <- betweenCurlies $ instruction `sepEndBy` spaces
+  reserved "if"
+  c <- parens $ many instruction
+  b <- braces $ many instruction
   return $ If c b
 
 loop = do
-  symbol "loop"
-  b <- betweenCurlies $ instruction `sepEndBy` spaces
+  reserved "loop"
+  b <- braces $ many instruction
   return $ Loop b
 
 while = do
-  symbol "while"
-  c <- betweenParens  $ instruction `sepEndBy` spaces
-  b <- betweenCurlies $ instruction `sepEndBy` spaces
+  reserved "while"
+  c <- parens $ many instruction
+  b <- braces $ many instruction
   return $ While c b
+
+rawBrainfuck = do
+  s <- many1 $ lexeme $ oneOf brainfuckChars
+  return $ RawBrainfuck s
 
 
 
 -- expressions
 
-expression = oneof
-  [ constantName
-  , literalString
-  , literalChar
-  , literalHex
-  , literalDec
-  ]
-
-constantName = ConstantName <$> name
-
-literalString = LiteralString <$> betweenQuotes (many $ charExcept '"')
-literalChar = LiteralChar <$> between (char '\'') (char '\'') (charExcept '\'')
-
-charExcept :: Char -> Parser Char
-charExcept c = oneof [ esc c c
-                     , esc 't' '\t'
-                     , esc 'n' '\n'
-                     , esc '\\' '\\'
-                     , noneOf $ c : "\\"
-                     ]
-  where esc x y = char '\\' >> char x >> return y :: Parser Char
-
-literalHex = do
-  string "0x"
-  n <- many1 hexDigit
-  -- FIXME: handle no parse
-  return $ LiteralInt $ fst $ head $ readHex n
-
-literalDec = do
-  n <- many1 digit
-  -- FIXME: handle no parse
-  return $ LiteralInt $ read n
+expression = choice
+  [ ConstantName  <$> identifier
+  , LiteralString <$> sLiteral
+  , LiteralChar   <$> cLiteral
+  , LiteralInt . fromInteger  <$> iLiteral
+  ] <?> "expression (constant name or literal)"
 
 
 
 -- variables and types
 
-typename = oneof [pstring, pint, pchar, pbool]
-  where pstring = BFString <$ char 'S'
-        pint    = BFInt    <$ char 'I'
-        pchar   = BFChar   <$ char 'C'
-        pbool   = BFBool   <$ char 'B'
-
-name = (:) <$> oneof [char '_', letter] <*> many (oneof [alphaNum, char '_'])
+typename = choice [pstring, pint, pchar, pbool] <?> "type name"
+  where pstring = BFString <$ lexeme (char 'S')
+        pint    = BFInt    <$ lexeme (char 'I')
+        pchar   = BFChar   <$ lexeme (char 'C')
+        pbool   = BFBool   <$ lexeme (char 'B')
 
 variable = do
   t <- typename
-  spaces
-  n <- name
+  n <- identifier
   return (t, n)
 
 
 
 -- helpers
-
-symbol :: String -> Parser String
-symbol s = string s <* spaces
-
 
 addPosition :: SourcePos -> a -> WithLocation a
 addPosition p = WL $ SourceFile n l c
@@ -187,24 +171,10 @@ addPosition p = WL $ SourceFile n l c
         l = sourceLine   p
         c = sourceColumn p
 
-
-oneof = foldl1 (<|>) . map try
-
-quote        = char '"'
-openParen    = symbol "("
-openCurly    = symbol "{"
-openBracket  = symbol "["
-closeParen   = symbol ")"
-closeCurly   = symbol "}"
-closeBracket = symbol "]"
-
-betweenQuotes   = between quote       quote
-betweenParens   = between openParen   closeParen
-betweenCurlies  = between openCurly   closeCurly
-betweenBrackets = between openBracket closeBracket
-
-inline = "inline"
-impure = "impure"
-keywords = sort [inline, impure]
+inline = 0
+impure = 1
+keywords = [ inline <$ reserved "inline"
+           , impure <$ reserved "impure"
+           ]
 
 brainfuckChars = "+-,.<>[]"
