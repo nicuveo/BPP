@@ -23,7 +23,7 @@ parseProgram :: Filename -> String -> Either Diagnostic Program
 parseProgram = left toDiagnostic ... parse program
   where toDiagnostic pe = addPosition (errorPos pe) $ ParseError $ show pe
 
-program = whiteSpace *> (statement `sepEndBy` many newline) <* eof
+program = whiteSpace *> statement `sepEndBy` many newline <* eof
 
 
 
@@ -31,18 +31,18 @@ program = whiteSpace *> (statement `sepEndBy` many newline) <* eof
 
 
 language :: P.TokenParser st
-language = P.makeTokenParser $ P.LanguageDef { P.commentStart    = "/*"
-                                             , P.commentEnd      = "*/"
-                                             , P.commentLine     = "//"
-                                             , P.nestedComments  = True
-                                             , P.identStart      = char '_' <|> letter
-                                             , P.identLetter     = char '_' <|> alphaNum
-                                             , P.opStart         = parserZero
-                                             , P.opLetter        = parserZero
-                                             , P.reservedOpNames = []
-                                             , P.reservedNames   = ["if", "while", "loop", "include", "def", "const", "inline", "impure"]
-                                             , P.caseSensitive   = True
-                                             }
+language = P.makeTokenParser P.LanguageDef { P.commentStart    = "/*"
+                                           , P.commentEnd      = "*/"
+                                           , P.commentLine     = "//"
+                                           , P.nestedComments  = True
+                                           , P.identStart      = char '_' <|> letter
+                                           , P.identLetter     = char '_' <|> alphaNum
+                                           , P.opStart         = parserZero
+                                           , P.opLetter        = parserZero
+                                           , P.reservedOpNames = []
+                                           , P.reservedNames   = ["if", "while", "loop", "include", "def", "const", "inline", "impure"]
+                                           , P.caseSensitive   = True
+                                           }
 
 whiteSpace = P.whiteSpace    language
 lexeme     = P.lexeme        language
