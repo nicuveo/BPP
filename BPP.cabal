@@ -26,6 +26,7 @@ executable bpp
                      Paths_BPP
   build-depends:     base,
                      containers,
+                     directory,
                      mtl,
                      transformers,
                      transformers-base,

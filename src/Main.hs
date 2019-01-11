@@ -1,5 +1,8 @@
 module Main where
 
+import           Data.List
+import           System.Directory
+
 
 import           Assembler
 import           BuiltIn
@@ -7,7 +10,16 @@ import           Compiler
 
 
 
-
+fileResolver :: String -> IO (Maybe String)
+fileResolver "Prelude" = Just <$> preludeFile
+fileResolver filename  = do
+  let rfn = if ".bs" `isSuffixOf` filename
+            then filename
+            else filename ++ ".bs"
+  dfe <- doesFileExist rfn
+  if dfe
+    then return Nothing
+    else Just <$> readFile rfn
 
 
 
@@ -23,10 +35,10 @@ main = do
 
 
 
-testResolver :: String -> IO String
-testResolver "interactive" = return testData
-testResolver "other"       = return otherData
-testResolver "Prelude"     = preludeFile
+testResolver :: String -> IO (Maybe String)
+testResolver "interactive" = return $ Just testData
+testResolver "other"       = return $ Just otherData
+testResolver "Prelude"     = Just <$> preludeFile
 testResolver _             = error "NIH"
 
 oldTestData :: String

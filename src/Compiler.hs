@@ -31,7 +31,7 @@ import           Types
 
 -- compiler
 
-type FileResolver m = Filename -> m String
+type FileResolver m = Filename -> m (Maybe String)
 
 newtype Dependencies m =
   Dependencies { fileResolver :: FileResolver m
@@ -57,28 +57,30 @@ runCompiler fs fn = do
     Left  _ -> return (d, Nothing)
   where deps = Dependencies fs
         st   = CompilerState M.empty builtinFunctions
-        expr = compile "Prelude" >> compile fn
+        expr = compile (WL undefined "Prelude") >> compile (WL undefined fn)
 
-compile :: CompilerMonad m => Filename -> CompilerT m ()
-compile filename = do
+compile :: CompilerMonad m => WithLocation Filename -> CompilerT m ()
+compile w@(WL _ filename) = do
   (_, diagnostics) <- W.listen $ do
     resolver <- R.asks fileResolver
-    content  <- liftBase $ resolver filename
     state    <- S.get
-    let mName   = moduleName filename
-    case parseProgram mName content of
-      Left diagnostic -> W.tell [diagnostic]
-      Right program   -> do
-        sequence_ $ step <$> program
-        S.modify $ addModule mName $ objects state
+    mContent <- liftBase $ resolver filename
+    case mContent of
+      Nothing      -> W.tell [FileNotFoundError filename <$ w]
+      Just content -> do
+        let mName   = moduleName filename
+        case parseProgram mName content of
+          Left diagnostic -> W.tell [diagnostic]
+          Right program   -> do
+            sequence_ $ step <$> program
+            S.modify $ addModule mName $ objects state
   when (any isError diagnostics) $ E.throwError ()
 
 step :: CompilerMonad m => WithLocation Statement -> CompilerT m ()
 step (WL _ (Comment _)) = return ()
-step (WL _ (Include filename)) = do
+step (WL l (Include filename)) = do
   cache <- S.gets moduleCache
-  -- TODO: handle file not found
-  when (moduleName filename `M.notMember` cache) $ compile filename
+  when (moduleName filename `M.notMember` cache) $ compile $ WL l filename
 step wp@(WL _ (ConstantDecl n)) = do
   objs <- S.gets objects
   let cName = constName n
@@ -184,14 +186,14 @@ checkInstruction objs f typeCheck stack wp@(WL _ (Loop lb)) = do
   when (typeCheck && newStack /= stack) $ reportAndStop wp $ BlockLoopNotStackNeutralError (stack, newStack)
   return newStack
 checkInstruction objs f typeCheck stack wp@(WL _ (If ic ib)) = do
-  cs@(cStackIn, cStackOut) <- foldM (guessStack objs f) ([], []) ic
-  when (cStackOut /= BFBool : cStackIn) $ report wp $ ConditionWrongTypeError cs
+  (cStackIn, cStackOut) <- foldM (guessStack objs f) ([], []) ic
+  when (cStackOut /= BFBool : cStackIn) $ report wp $ ConditionWrongTypeError (reverse cStackIn, reverse cStackOut)
   newStack <- checkInstructions objs f typeCheck stack ib
   when (typeCheck && newStack /= stack) $ reportAndStop wp $ BlockIfNotStackNeutralError (stack, newStack)
   return newStack
 checkInstruction objs f typeCheck stack wp@(WL _ (While wc wb)) = do
-  cs@(cStackIn, cStackOut) <- foldM (guessStack objs f) ([], []) wc
-  when (cStackOut /= BFBool : cStackIn) $ report wp $ ConditionWrongTypeError cs
+  (cStackIn, cStackOut) <- foldM (guessStack objs f) ([], []) wc
+  when (cStackOut /= BFBool : cStackIn) $ report wp $ ConditionWrongTypeError (reverse cStackIn, reverse cStackOut)
   newStack <- checkInstructions objs f typeCheck stack wb
   when (typeCheck && newStack /= stack) $ reportAndStop wp $ BlockWhileNotStackNeutralError (stack, newStack)
   return newStack
