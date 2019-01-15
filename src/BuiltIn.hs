@@ -4,6 +4,7 @@ module BuiltIn where
 
 -- imports
 
+import           Data.Bits
 import           Data.Char
 import           Data.List as L
 import qualified Data.Map  as M
@@ -37,9 +38,13 @@ pushc = Function "pushc" False True [(BFChar, "c")] [] [BFChar] pushc_
 
 pushi :: Function
 pushi = Function "pushi" False True [(BFInt, "x")] [] [BFInt] pushi_
-  where pushi_ [("x", VInt x)] = [builtinLocation $ RawBrainfuck $ concat ['>' : replicate i '+' | i <- reverse $ decompose 3 x]]
+  where pushi_ [("x", VInt x)] = [builtinLocation $ RawBrainfuck $ concat ['>' : replicate i '+' | i <- decompose x]]
         pushi_ _ = error "ICE"
-        decompose n x = undefined
+        decompose x = [ mod (div x 16777216) 256 .|. (if x < 0 then 127 else 0)
+                      , mod (div x    65536) 256
+                      , mod (div x      256) 256
+                      , mod      x           256
+                      ]
 
 set :: Function
 set = Function "set" False True [(BFChar, "x")] [BFChar] [BFChar] set_
