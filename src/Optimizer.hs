@@ -1,21 +1,50 @@
+{- Optimizer.hs
+
+This optimizer could be a standalone program, as it does not depend on
+our pseudo-forth made-up language. `optimize` simply takes a string,
+parses it, and performs a small number of simple optimizations.
+
+* dead code is removed: a loop after a loop will never get executed,
+  and can be safely removed
+* modifification before zeroing a cell is ultimately useless and can
+  be discarded
+* segments of movement and increase / decrease can be combined and
+  reordered, for simplification
+* all code after the last input / output is dead code
+
+Where this optimizer can be slow is when reordering a sequence of cell
+assignment, as it tries to pick the shortest path that goes through
+all the cells that need to be modified, which is equivalent to the
+traveling salesman problem, and implies testing all
+possibilities... In practice this shouldn't be an issue.
+
+-}
+
 module Optimizer (optimize) where
 
-import           Data.List   (dropWhileEnd, foldl', notElem, permutations)
+
+
+-- imports
+
+import           Data.List   (dropWhileEnd, foldl', permutations)
 import qualified Data.Map    as M
 import           Text.Parsec
 import           Text.Printf
 
+
+
+-- optimizer
+
 optimize :: String -> String
 optimize = show . simplify . decompose
+
+
+
+-- internal representation
 
 data Value = Relative Int
            | Absolute Int
            deriving (Eq, Ord)
-
-combine :: Value -> Value -> Value
-combine _            (Absolute x) = Absolute x
-combine (Relative x) (Relative d) = Relative $ x + d
-combine (Absolute x) (Relative d) = Absolute $ x + d
 
 data Code = Zero
           | Input
@@ -23,6 +52,7 @@ data Code = Zero
           | Loop [Code]
           | Assignment Int (M.Map Int Value)
           deriving Eq
+
 
 instance Show Code where
   showList c = ((c >>= show) ++)
@@ -44,6 +74,22 @@ instance Show Code where
           sumDistance p = let (d, endP) = foldl' (\(x,cp)(np,_)->(x+abs(np-cp),np)) (0,0) p
                           in d + abs(endP-e)
 
+
+combine :: Value -> Value -> Value
+combine _            (Absolute x) = Absolute x
+combine (Relative x) (Relative d) = Relative $ x + d
+combine (Absolute x) (Relative d) = Absolute $ x + d
+
+isIO :: Code -> Bool
+isIO Input    = True
+isIO Output   = True
+isIO (Loop l) = any isIO l
+isIO _        = False
+
+
+
+-- parsing the code
+
 decompose :: String -> [Code]
 decompose = either (error . show) id . parse code "<optimizer>" . filter (`elem` "<>+-.,[]")
   where code = many $ choice [ Input  <$ char ','
@@ -61,19 +107,24 @@ decompose = either (error . show) id . parse code "<optimizer>" . filter (`elem`
         step _ _ = error "optimizer internal error"
 
 simplify :: [Code] -> [Code]
-simplify = clean . dropWhileEnd (`notElem` [Input, Output]) . simplify_
-  where simplify_ (Zero           : Zero           : c) = simplify_ $ Zero   : c
+simplify = clean . dropWhileEnd (not . isIO) . simplify_
+  where -- two loops in a row: the second one is dead code
+        simplify_ (Zero           : Zero           : c) = simplify_ $ Zero   : c
         simplify_ (Zero           : Loop _         : c) = simplify_ $ Zero   : c
         simplify_ (Loop l         : Zero           : c) = simplify_ $ Loop l : c
         simplify_ (Loop l         : Loop _         : c) = simplify_ $ Loop l : c
+        -- simple loop withing a loop: the outer layer can be removed
         simplify_ (Loop [Loop l]                   : c) = simplify_ $ Loop l : c
         simplify_ (Loop [Zero]                     : c) = simplify_ $ Zero   : c
         simplify_ (Loop l                          : c) = Loop (simplify_ l) : simplify_ c
+        -- assignment and zeros can be combined
         simplify_ (Assignment e a : Zero           : c) = simplify_ $ Assignment e (M.insert e (Absolute 0) a) : c
         simplify_ (Zero           : Assignment e a : c) = simplify_ $ Assignment e (M.insertWith combine 0 (Absolute 0) a) : c
         simplify_ (Assignment e a : Assignment f b : c) = simplify_ $ Assignment (e+f) (M.foldlWithKey' (\m k x -> M.insertWith (flip combine) (e+k) x m) a b) : c
+        -- otherwise simple recursion
         simplify_ (e:c)                                 = e : simplify_ c
         simplify_ []                                    = []
+        -- no need to set values to 0 at the start of the program
         clean (Assignment e a : c) = Assignment e (M.map toRelative a) : c
         clean c                    = c
         toRelative (Absolute x) = Relative x
