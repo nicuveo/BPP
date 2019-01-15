@@ -14,6 +14,7 @@ import           Grammar
 import           Misc
 import           Module
 import           Object
+import           Optimizer
 
 
 assembleVerbosely :: Monad m => ObjectMap -> m String
@@ -59,7 +60,7 @@ assembleVerbosely objs = unlines <$> expandFunc 0 mainFunc []
                   return $ printf "%s[[-]<\n  if\n%s\n>[-]]<\n" t i
 
 assembleDensely :: Monad m => ObjectMap -> m String
-assembleDensely objs = unlines . chunksOf 120 . concat <$> expandFunc 0 mainFunc []
+assembleDensely objs = unlines . chunksOf 120 . optimize . concat <$> expandFunc 0 mainFunc []
   where mainFunc = extractFun objs "main"
         expandFunc :: Monad m => Int -> Function -> [(String, Value)] -> m [String]
         expandFunc level func args = do
