@@ -1,6 +1,6 @@
-name:                BPP
+name:                BFS
 version:             0.1.0
-synopsis:            A BrainPlusPlus compiler
+synopsis:            A (made-up forth-like language)-to-Brainfuck transpiler
 
 license:             MIT
 license-file:        LICENSE
@@ -14,7 +14,7 @@ cabal-version:       >=1.10
 
 data-files:          src/Prelude.bs
 
-executable bpp
+executable bfs
   main-is:           Main.hs
   hs-source-dirs:    src
   default-language:  Haskell2010
@@ -23,7 +23,7 @@ executable bpp
                      -fno-warn-unused-do-bind
                      -fwarn-tabs
   other-modules:     Misc, Grammar, Diagnostics, Parser, Object, Compiler, Assembler, BuiltIn, Module, Optimizer
-                     Paths_BPP
+                     Paths_BFS
   build-depends:     base,
                      containers,
                      directory,

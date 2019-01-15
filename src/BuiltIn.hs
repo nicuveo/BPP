@@ -13,7 +13,7 @@ import           Grammar
 import           Module
 import           Object
 
-import           Paths_BPP
+import           Paths_BFS
 
 
 
