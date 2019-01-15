@@ -22,7 +22,7 @@ executable bpp
                      -fno-warn-type-defaults
                      -fno-warn-unused-do-bind
                      -fwarn-tabs
-  other-modules:     Types, Grammar, Diagnostics, Parser, Object, Compiler, Assembler, BuiltIn, Module, Optimizer
+  other-modules:     Misc, Grammar, Diagnostics, Parser, Object, Compiler, Assembler, BuiltIn, Module, Optimizer
                      Paths_BPP
   build-depends:     base,
                      containers,

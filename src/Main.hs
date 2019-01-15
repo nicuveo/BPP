@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections #-}
+
 module Main where
 
 import           Data.List
@@ -10,8 +12,8 @@ import           Compiler
 
 
 
-fileResolver :: String -> IO (Maybe String)
-fileResolver "Prelude" = Just <$> preludeFile
+fileResolver :: String -> IO (Maybe (String, String))
+fileResolver "Prelude" = Just . ("Prelude.bs",) <$> preludeFile
 fileResolver filename  = do
   let rfn = if ".bs" `isSuffixOf` filename
             then filename
@@ -19,13 +21,13 @@ fileResolver filename  = do
   dfe <- doesFileExist rfn
   if dfe
     then return Nothing
-    else Just <$> readFile rfn
+    else Just . (rfn,) <$> readFile rfn
 
 
 
 main :: IO ()
 main = do
-  (diags, mObjs) <- runCompiler testResolver "interactive"
+  (diags, mObjs) <- compile testResolver "interactive"
   mapM_ print diags
   case mObjs of
     Nothing -> putStrLn "Aborting."
@@ -35,10 +37,10 @@ main = do
 
 
 
-testResolver :: String -> IO (Maybe String)
-testResolver "interactive" = return $ Just testData
-testResolver "other"       = return $ Just otherData
-testResolver "Prelude"     = Just <$> preludeFile
+testResolver :: String -> IO (Maybe (String, String))
+testResolver "interactive" = return $ Just ("interactive", testData)
+testResolver "other"       = return $ Just ("other.hs", otherData)
+testResolver "Prelude"     = Just . ("Prelude.bs",) <$> preludeFile
 testResolver _             = error "NIH"
 
 oldTestData :: String

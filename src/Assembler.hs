@@ -11,9 +11,9 @@ import           Text.Printf
 
 import           Compiler
 import           Grammar
+import           Misc
 import           Module
 import           Object
-import           Types
 
 
 assembleVerbosely :: Monad m => ObjectMap -> m String
@@ -91,7 +91,7 @@ extractParams objs _ argsCaller callee argsCallee =
   ]
   where scope = M.union (M.fromList $ fmap (WL undefined . ValueObject) <$> argsCaller) objs
 
-extractFun :: ObjectMap -> Name -> Function
+extractFun :: ObjectMap -> String -> Function
 extractFun = getFun ... (M.!)
   where getFun (WL _ (FunctionObject f)) = f
         getFun _ = error "should never happen"

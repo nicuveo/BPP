@@ -6,13 +6,11 @@ module Module where
 
 import           Text.Printf
 
-import           Types
-
 
 
 -- location info
 
-data Location = SourceFile { locSource :: Filename
+data Location = SourceFile { locSource :: String
                            , locLine   :: Int
                            , locColumn :: Int
                            }

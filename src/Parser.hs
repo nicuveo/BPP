@@ -1,3 +1,12 @@
+{- Parser.hs
+
+This file only exposes parseProgram, which takes a module name, the
+string content, and attempts to parse it. It returns either a parse
+error or a Program, which is simply a list of statements (see
+Grammar).
+
+-}
+
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
 module Parser (parseProgram) where
@@ -12,14 +21,14 @@ import qualified Text.Parsec.Token as P
 
 import           Diagnostics
 import           Grammar
+import           Misc
 import           Module
-import           Types
 
 
 
 -- program
 
-parseProgram :: Filename -> String -> Either Diagnostic Program
+parseProgram :: String -> String -> Either Diagnostic Program
 parseProgram = left toDiagnostic ... parse program
   where toDiagnostic pe = addPosition (errorPos pe) $ ParseError $ show pe
 
@@ -29,8 +38,6 @@ program = whiteSpace *> statement `sepEndBy` many newline <* eof
 
 -- language definition
 
-
-language :: P.TokenParser st
 language = P.makeTokenParser P.LanguageDef { P.commentStart    = "/*"
                                            , P.commentEnd      = "*/"
                                            , P.commentLine     = "//"

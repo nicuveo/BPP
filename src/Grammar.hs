@@ -1,3 +1,11 @@
+{- Grammar.hs
+
+This file exposes the AST of our made-up language and a few helper
+functions. Elements are stored with their location, for diagnostic
+purposes.
+
+-}
+
 module Grammar where
 
 
@@ -8,28 +16,28 @@ import           Data.List
 import           Text.Printf
 
 import           Module
-import           Types
 
 
 
--- grammar
+-- types
 
-type Program = [WithLocation Statement]
+type Collection a = [WithLocation a]
 
-data Statement = Include      Filename
-               | Comment      Raw
+type Program = Collection Statement
+
+data Statement = Include      String
                | ConstantDecl Constant
                | FunctionDecl Function
                deriving (Show)
 
-data Instruction = FunctionCall Name [Expression]
-                 | RawBrainfuck Raw
-                 | If           [WithLocation Instruction] [WithLocation Instruction]
-                 | Loop         [WithLocation Instruction]
-                 | While        [WithLocation Instruction] [WithLocation Instruction]
+data Instruction = FunctionCall String [Expression]
+                 | RawBrainfuck String
+                 | If           (Collection Instruction) (Collection Instruction)
+                 | Loop         (Collection Instruction)
+                 | While        (Collection Instruction) (Collection Instruction)
                  deriving (Show)
 
-data Expression = ConstantName  Name
+data Expression = ConstantName  String
                 | LiteralString String
                 | LiteralChar   Char
                 | LiteralInt    Int
@@ -37,42 +45,18 @@ data Expression = ConstantName  Name
 
 
 data Constant = Constant { constType :: Type
-                         , constName :: Name
+                         , constName :: String
                          , constExpr :: Expression
                          } deriving (Show)
 
-data Function = Function { funcName   :: Name
+data Function = Function { funcName   :: String
                          , funcPure   :: Bool
                          , funcInline :: Bool
                          , funcArgs   :: [Variable]
                          , funcInput  :: [Type]
                          , funcOutput :: [Type]
-                         , funcBody   :: [(String, Value)] -> [WithLocation Instruction]
+                         , funcBody   :: [(String, Value)] -> Collection Instruction
                          }
-
-
-instance Show Function where
-  show f = printf "{%sfunction %s(%s) %s -> %s}" q n a i o
-    where q = unwords $ ["impure" | not $ funcPure f] ++ ["inline" | funcInline f] ++ [""]
-          n = funcName f
-          a = intercalate ", " $ show <$> funcArgs f
-          i = show $ funcInput f
-          o = show $ funcOutput f
-
-
-isImpure :: Instruction -> Bool
-isImpure (FunctionCall _ _) = False
-isImpure (RawBrainfuck _  ) = True
-isImpure (Loop         b  ) = anyImpure (getEntry <$> b)
-isImpure (If           c b) = anyImpure (getEntry <$> c) || anyImpure (getEntry <$> b)
-isImpure (While        c b) = anyImpure (getEntry <$> c) || anyImpure (getEntry <$> b)
-
-anyImpure :: [Instruction] -> Bool
-anyImpure = any isImpure
-
-
-
--- values
 
 data Type = BFInt
           | BFChar
@@ -86,8 +70,19 @@ data Value = VInt Int
            | VBool Bool
            deriving (Eq)
 
-type Variable  = (Type, Name)
+type Variable  = (Type, String)
 
+
+
+-- show instances
+
+instance Show Function where
+  show f = printf "{%sfunction %s(%s) %s -> %s}" q n a i o
+    where q = unwords $ ["impure" | not $ funcPure f] ++ ["inline" | funcInline f] ++ [""]
+          n = funcName f
+          a = intercalate ", " $ show <$> funcArgs f
+          i = show $ funcInput f
+          o = show $ funcOutput f
 
 instance Show Type where
   show BFInt    = "Int"
@@ -100,6 +95,20 @@ instance Show Value where
   show (VChar   c) = show c
   show (VString s) = show s
   show (VBool   b) = show b
+
+
+
+-- helper functions
+
+isImpure :: Instruction -> Bool
+isImpure (FunctionCall _ _) = False
+isImpure (RawBrainfuck _  ) = True
+isImpure (Loop         b  ) = anyImpure b
+isImpure (If           c b) = anyImpure c || anyImpure b
+isImpure (While        c b) = anyImpure c || anyImpure b
+
+anyImpure :: Collection Instruction -> Bool
+anyImpure = any isImpure . map getEntry
 
 typeof :: Value -> Type
 typeof (VInt    _) = BFInt
